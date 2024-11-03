@@ -1,11 +1,20 @@
 <?php
 
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
+
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::controller(HomeController::class)->group(function () {
+  Route::get('/', 'welcome')->name('inicio'); // Livewire
+  Route::get('/acercade', 'acercaDe')->name('acercade'); // Blade
+  Route::get('/contactarnos', 'contactarnos')->name('contactarnos'); // Livewire
+  Route::get('/ayuda', 'ayuda')->name('ayuda'); // Blade
 });
+
+// Route::get('/', function () {
+//     return view('welcome');
+// })->name('inicio');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
