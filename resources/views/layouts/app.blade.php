@@ -20,7 +20,8 @@
 <body class="font-sans antialiased bg-lightBg text-lightText dark:bg-darkBg dark:text-darkText">
   <div class="min-h-screen">
     <!-- Page Heading -->
-    <header class="bg-lightBg text-lightText dark:bg-darkBg dark:text-darkText shadow">
+    <header
+      class="bg-lightBg/70 text-lightText/70 dark:bg-darkBg/70 dark:text-darkText/70 shadow font-semibold text-xl leading-tight">
       @include('layouts.navigation')
       @isset($header)
       <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -42,7 +43,7 @@
     </main>
 
     @isset($footer)
-    <footer class="bg-lightBg text-lightText dark:bg-darkBg dark:text-darkText">
+    <footer class="bg-lightBg/70 text-lightText/70 dark:bg-darkBg/70 dark:text-darkText/70 font-thin text-end text-xs">
       <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {{ $footer }}
       </div>

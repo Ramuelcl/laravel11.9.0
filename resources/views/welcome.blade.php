@@ -1,8 +1,6 @@
 <x-app-layout>
   <x-slot name="header">
-    <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-      {{ __('Welcome') }}
-    </h2>
+    {{ __('Welcome') }}
   </x-slot>
 
   <div class="py-12">
@@ -14,4 +12,9 @@
       </div>
     </div>
   </div>
+
+  <x-slot name="footer">
+    {{ __('Footer') }}
+  </x-slot>
+
 </x-app-layout>
