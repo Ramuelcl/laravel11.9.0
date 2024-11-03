@@ -35,11 +35,15 @@
     <main>
       {{-- Contenido para Livewire o Blade --}}
       @isset($slot)
-      {{ $slot }}
+      <div class="p-4 max-w-7xl mx-auto sm:px-6 lg:px-8">
+        {{ $slot }}
+      </div>
       <!-- Para componentes Livewire -->
       @else
-      @yield('content')
-      <!-- Para vistas Blade normales -->
+      <div class="p-4 max-w-7xl mx-auto sm:px-6 lg:px-8">
+        @yield('content')
+      </div>
+      </ <!-- Para vistas Blade normales -->
       @endisset
     </main>
 
