@@ -15,8 +15,10 @@
         <div class=" hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
           @php
           $menus=[
-          'acerca de'=>['route'=>'acercade','active'=>'acercade','titulo'=>'Acerca de...',]
-          ]
+          'acerca de'=>['route'=>'acercade','active'=>'acercade','titulo'=>'Acerca de...'],
+          'contacto'=>['route'=>'contacto','active'=>'contacto','titulo'=>'contacto'],
+          'iconos'=>['route'=>'iconos','active'=>'iconos','titulo'=>'iconos'],
+          ];
           @endphp
           @foreach ($menus as $menu)
           {{-- @dd($menu) --}}

@@ -1,23 +1,28 @@
-{{-- resources/views/principal/iconos.blade.php --}}
-<x-app-layout>
-  <x-slot name="header">
-    {{ __('Icons') }}
-    {{-- <div class="mt-2 font-normal">
-      <a class="rounded bg-blue-500 px-4 py-1 text-white"
-         href="{{ route('iconos', ['typeIcon' => 'outline']) }}">Outline</a>
-      <a class="rounded bg-blue-500 px-4 py-1 text-white"
-         href="{{ route('iconos', ['typeIcon' => 'solid']) }}">Solid</a>
-    </div> --}}
-  </x-slot>
+<x-app-layout titulo="- Iconos">
+  {{-- resources/views/components/forms/principal/iconos.blade.php --}}
+  @php
+  $directory = public_path('app\icons\outline');
+  // Reemplaza esto con la ruta al directorio que contiene los íconos SVG
+  // dd($directory);
 
-  <div class="mb-4 flex items-center justify-between">
-    <div class="mt-2 flex flex-wrap">
-      @foreach ($svgIcons as $svgIcon)
-        <div class="m-2 flex flex-col items-center rounded-lg border-2 border-blue-400 p-2">
-          <x-forms.tw_icons class="mb-2 h-8 w-8"
-                            :name="$svgIcon" />
-          <span>{{ $svgIcon }}</span>
-        </div>
-      @endforeach
+  $icons = scandir($directory);
+  $svgIcons = [];
+
+  foreach ($icons as $icon) {
+  // dump(pathinfo($icon, PATHINFO_EXTENSION));
+  if (pathinfo($icon, PATHINFO_EXTENSION) === 'php') {
+  $icon = str_replace('.blade.php', '', $icon);
+  // dump($icon);
+  $svgIcons[] = $icon;
+  }
+  }
+  @endphp
+
+  <div class="flex flex-wrap">
+    @foreach ($svgIcons as $svgIcon)
+    <div class="p-4 m-2 rounded-lg border-2 border-blue-400 text-center">
+      <x-forms.tw_icons class="" name="{{ $svgIcon }}" />{{ $svgIcon }}
     </div>
+    @endforeach
+  </div>
 </x-app-layout>

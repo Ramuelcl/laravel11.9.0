@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-  // Página de entrada al sistema (Livewire)
+  // Página de entrada al sistema
   public function welcome()
   {
     return view('pages.welcome');
@@ -19,15 +19,15 @@ class HomeController extends Controller
     return view('pages.acercade'); // Asumiendo que existe una vista Blade 'acercade' en 'resources/views/pages'
   }
 
-  // Página "Contactarnos" (Livewire)
-  public function contactarnos()
+  // Página "Contactarnos"
+  public function contacto()
   {
-    return view('livewire.contactarnos'); // Componente Livewire para 'contactarnos'
+    return view('pages.contacto'); // Componente Livewire para 'contactarnos'
   }
 
   // Página "Ayuda" (Blade)
-  public function ayuda()
+  public function iconos()
   {
-    return view('pages.ayuda'); // Vista Blade para 'ayuda'
+    return view('pages.iconos'); // Vista Blade para 'iconos'
   }
 }
