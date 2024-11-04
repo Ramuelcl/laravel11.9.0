@@ -3,15 +3,20 @@
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 
+use App\Livewire\Pages\Contacto;
+
 use Illuminate\Support\Facades\Route;
 
 Route::controller(HomeController::class)->group(function () {
   Route::get('/', 'welcome')->name('inicio'); // Blade
   Route::get('/acercade', 'acercaDe')->name('acercade'); // Blade
-  Route::get('/contacto', 'contacto')->name('contacto'); // Blade
+  // Route::get('/contacto', 'contacto')->name('contacto'); // livewire
   Route::get('/iconos', 'iconos')->name('iconos'); // Blade
-  Route::get('/ayuda', 'ayuda')->name('ayuda'); // Blade
+  Route::get('/pruebas', 'pruebas')->name('pruebas'); // Blade
 });
+// Ruta para el componente Livewire
+Route::get('/contacto', Contacto::class)->name('contacto');
+
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -28,3 +33,5 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+// Include the routes from the trabajos.php file
+// include __DIR__ . '/trabajos.php'; 

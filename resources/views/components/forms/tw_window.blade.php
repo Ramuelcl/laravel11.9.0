@@ -1,14 +1,22 @@
-@props(['width'=>'w-96', 'title'=>'Title of window'])
-<div class="fixed inset-0 flex items-center justify-center z-50">
-  {{--resources/views/components/forms/tw_window.blade.php --}}
-  <div class="w- border border-gray-300 rounded-md shadow-lg {{ $width }} relative" id="ventana">
+{{-- resources/views/components/tw_window.blade.php --}}
+@props(['width' => 'w-96', 'title' => 'Title of window', 'modal' => false])
+
+<div class="fixed inset-0 flex items-center justify-center z-50" id="modalContainer" style="display: none;">
+  {{-- Fondo Oscuro Semitransparente para modo modal --}}
+  @if ($modal)
+  <div class="fixed inset-0 bg-black opacity-50" id="overlay"></div>
+  @endif
+
+  <div class="border border-gray-300 rounded-md shadow-lg bg-white dark:bg-gray-800 {{ $width }} relative z-10"
+    id="ventana">
     <div class="bg-blue-500 px-4 py-2 rounded-t-md flex items-center justify-between">
 
-      {{-- titulo --}}
-      <span class="text-white font-semibold text-lg">{{__( $title)}}</span>
+      {{-- Título --}}
+      <span class="text-white font-semibold text-lg">{{ __($title) }}</span>
 
       <div class="ml-auto space-x-2">
-        <x-forms.tw_icons name="x" class="text-gray-50" />
+        {{-- Ícono de cerrar con id="cerrarBtn" --}}
+        <x-forms.tw_icons id="cerrarBtn" name="x" class="text-gray-50 cursor-pointer" />
       </div>
     </div>
     <div class="p-4">
@@ -16,7 +24,7 @@
       {{ $slot }}
     </div>
     @isset($footer)
-    <div class=" bg-gray-100 px-4 py-2 rounded-b-md border-t-2 flex justify-end space-x-2">
+    <div class="bg-gray-100 px-4 py-2 rounded-b-md border-t-2 flex justify-end space-x-2">
       {{ $footer }}
     </div>
     @endisset
@@ -25,43 +33,30 @@
 
 <script>
   // Obtener los elementos del DOM
-  const minimizarBtn = document.getElementById('minimizarBtn');
-  const maximizarBtn = document.getElementById('maximizarBtn');
   const cerrarBtn = document.getElementById('cerrarBtn');
   const ventana = document.getElementById('ventana');
-  const contenidoVentana = document.querySelector('#ventana > div:nth-child(2)'); // Selecciona el segundo div hijo de #ventana
+  const modalContainer = document.getElementById('modalContainer');
+  const overlay = document.getElementById('overlay');
 
-  let ventanaMaximizada = false; // Variable para rastrear el estado de maximización
+  // Función para mostrar el modal
+  function abrirModal(isModal = true) {
+    modalContainer.style.display = 'flex';
 
-  // Añadir eventos a los botones
-minimizarBtn.addEventListener('click', () => {
-contenidoVentana.classList.toggle('hidden'); // Oculta/muestra el contenido
-
-// Ajusta el ancho de la ventana y el icono del botón
-if (ventana.classList.contains('w-96')) {
-ventana.classList.replace('w-96', 'w-1/2'); // Cambia a 50% de ancho
-minimizarBtn.innerHTML = '□'; // Cambia el icono a un cuadrado
-} else {
-ventana.classList.replace('w-1/2', 'w-96'); // Vuelve al ancho original
-minimizarBtn.innerHTML = '-'; // Vuelve al icono de minimizar
-}
-});
-
-  maximizarBtn.addEventListener('click', () => {
-    if (ventanaMaximizada) {
-      // Restaurar tamaño original
-      ventana.classList.remove('w-screen', 'h-screen', 'rounded-none');
-      ventana.classList.add('w-96', 'rounded-md');
-      ventanaMaximizada = false;
+    // Si es modal, muestra el overlay y permite cerrar al hacer clic fuera
+    if (isModal && overlay) {
+      overlay.style.display = 'block';
+      overlay.addEventListener('click', cerrarModal);
     } else {
-      // Maximizar ventana
-      ventana.classList.remove('w-96', 'rounded-md');
-      ventana.classList.add('w-screen', 'h-screen', 'rounded-none');
-      ventanaMaximizada = true;
+      // En caso contrario, oculta el overlay y no permite cerrar al hacer clic fuera
+      if (overlay) overlay.style.display = 'none';
     }
-  });
+  }
 
-  cerrarBtn.addEventListener('click', () => {
-    ventana.style.display = 'none'; // Oculta la ventana completamente
-  });
+  // Función para cerrar el modal
+  function cerrarModal() {
+    modalContainer.style.display = 'none';
+  }
+
+  // Añadir evento para cerrar la ventana al hacer clic en cerrarBtn
+  cerrarBtn.addEventListener('click', cerrarModal);
 </script>

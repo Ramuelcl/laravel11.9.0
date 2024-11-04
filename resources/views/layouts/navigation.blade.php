@@ -1,11 +1,11 @@
 <nav x-data="{ open: false }" class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
   <!-- Primary Navigation Menu -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex justify-between h-16">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-slate-100">
+    <div class="flex justify-between h-16 bg-slate-200">
       <div class="flex">
         <!-- Logo -->
-        <div class="shrink-0 flex items-center">
-          <a href="{{ route('inicio') }}">
+        <div class="shrink-0 flex items-center bg-slate-300">
+          <a href="{{ route('inicio') }}" class="px-2 bg-slate-400">
             <x-header.logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200"
               showText="{{ config('guzanet.appEmpresa') }}" />
           </a>
@@ -15,19 +15,28 @@
         <div class=" hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
           @php
           $menus=[
-          'acerca de'=>['route'=>'acercade','active'=>'acercade','titulo'=>'Acerca de...'],
-          'contacto'=>['route'=>'contacto','active'=>'contacto','titulo'=>'contacto'],
-          'iconos'=>['route'=>'iconos','active'=>'iconos','titulo'=>'iconos'],
+          'acerca de'=>['route'=>'acercade','icon'=>'acercade','titulo'=>'Acerca de...'],
+          'contacto'=>['route'=>'contacto','icon'=>'contacto','titulo'=>'contacto'],
+          'iconos'=>['route'=>'iconos','icon'=>'iconos','titulo'=>'iconos'],
+          'pruebas'=>['route'=>'pruebas','icon'=>'pruebas','titulo'=>'pruebas'],
           ];
           @endphp
-          @foreach ($menus as $menu)
+          @foreach ($menus as $title=>$menu)
           {{-- @dd($menu) --}}
-          <x-nav-link :href="route($menu['route'])" :active="request()->routeIs($menu['active'])">
-            {{ __($menu['titulo']) }}
+          <x-nav-link :href="route($menu['route'])" :active="request()->routeIs($menu['route'])">
+            @isset($menu['icon'])
+            <x-forms.tw_icons name="{{ $menu['icon'] }}" :error=false />
+            @endisset
+            {{ __($title) }}
           </x-nav-link>
+
+          {{-- <x-nav-link :href=" route($menu['route'])" :active="request()->routeIs($menu['active'])">
+            {{ __($menu['titulo']) }}
+          </x-nav-link> --}}
 
           @endforeach
         </div>
+
       </div>
 
       @auth
@@ -67,6 +76,7 @@
         </x-dropdown>
       </div>
       @endauth
+
       <!-- Hamburger -->
       <div class="-me-2 flex items-center sm:hidden">
         <button @click="open = ! open"

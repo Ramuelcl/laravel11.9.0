@@ -19,15 +19,15 @@ class HomeController extends Controller
     return view('pages.acercade'); // Asumiendo que existe una vista Blade 'acercade' en 'resources/views/pages'
   }
 
-  // Página "Contactarnos"
-  public function contacto()
-  {
-    return view('pages.contacto'); // Componente Livewire para 'contactarnos'
-  }
-
   // Página "Ayuda" (Blade)
   public function iconos()
   {
     return view('pages.iconos'); // Vista Blade para 'iconos'
+  }
+
+  // Página "todo" (Blade)
+  public function pruebas()
+  {
+    return view('pages.pruebas'); // Vista Blade para 'todo'
   }
 }

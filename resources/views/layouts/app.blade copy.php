@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr-FR">
-{{-- <html lang="{{ str_replace('_', '-', config('guzanet.idioma', 'fr-FR')) }}"> --}}
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
   <meta charset="utf-8">
@@ -26,41 +25,47 @@
       {{-- Navegación --}}
       @include('layouts.navigation')
 
-      <!-- Encabezado de la página -->
       @isset($header)
+      <!-- Para componentes Livewire -->
       <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {{ $header }}
       </div>
       @else
+      <!-- Para vistas Blade normales -->
       @yield('header')
       @endisset
     </header>
 
     <!-- Page Content -->
-    <main class="flex-grow">
+    <main>
+      {{-- Contenido para Livewire o Blade --}}
+      <!-- Para componentes Livewire -->
       <div class="p-4 max-w-7xl mx-auto sm:px-6 lg:px-8">
         @isset($slot)
         {{ $slot }}
+
         @else
+        </ <!-- Para vistas Blade normales -->
         @yield('content')
         @endisset
       </div>
     </main>
 
-    <!-- Footer -->
-    <footer
-      class="bg-lightBg/70 text-lightText/70 dark:bg-darkBg/70 dark:text-darkText/70 font-thin text-end text-xs py-4">
+    <footer class="bg-lightBg/70 text-lightText/70 dark:bg-darkBg/70 dark:text-darkText/70 font-thin text-end text-xs">
+      @isset($footer)
       <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        @isset($footer)
         {{ $footer }}
-        @else
-        @yield('footer')
-        @endisset
       </div>
+      @else
+      <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        @yield('footer')
+      </div>
+      @endisset
     </footer>
-  </div>
 
+  </div>
   @livewireScripts
+
 </body>
 
 </html>
