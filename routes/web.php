@@ -1,11 +1,12 @@
 <?php
+// routes/web.php
 
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 
 use App\Livewire\Pages\Contacto;
 
-use Illuminate\Support\Facades\Route;
+use App\Livewire\Pruebas;
 
 Route::controller(HomeController::class)->group(function () {
   Route::get('/', 'welcome')->name('inicio'); // Blade
@@ -16,6 +17,8 @@ Route::controller(HomeController::class)->group(function () {
 });
 // Ruta para el componente Livewire
 Route::get('/contacto', Contacto::class)->name('contacto');
+
+Route::get('/pruebas', Pruebas::class)->name('pruebas');
 
 
 // Route::get('/', function () {

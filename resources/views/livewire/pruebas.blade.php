@@ -22,10 +22,10 @@
   </x-forms.tw_windowModal>
   @endif
 
-  {{-- Componente tw_window (no modal, centrado dentro del contenedor) --}}
+  {{-- Componente tw_window (no modal, libre posicionamiento) --}}
   @if ($showWindow)
-  <x-forms.tw_window title="Ventana No Modal" width="w-80">
-    <p>Este es el contenido de la ventana no modal. Está centrado en el contenedor.</p>
+  <x-forms.tw_window title="Ventana No Modal" width="w-80" position="absolute top-20 left-20">
+    <p>Este es el contenido de la ventana no modal. Puedes posicionarla libremente.</p>
     <x-slot name="footer">
       <button wire:click="toggleWindow" class="bg-green-500 text-white px-4 py-2 rounded-md">Cerrar</button>
     </x-slot>
