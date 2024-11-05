@@ -1,34 +1,25 @@
 {{-- resources/views/livewire/pruebas.blade.php --}}
-<div class="container mx-auto p-4">
-  <h1 class="text-xl font-semibold mb-4">Página de Pruebas para Ventanas Modal y No Modal</h1>
+<x-forms.tw_window title="probando Input en formularios" position="absolute left-40">
+  <form class="mt-4" wire:submit.prevent="submitForm">
+    {{-- Ejemplo de campo de texto --}}
+    <x-forms.tw_input id="username" name="username" label="Nombre de usuario" />
 
-  {{-- Botón para mostrar el tw_windowModal (siempre modal) --}}
-  <button wire:click="toggleWindowModal" class="bg-blue-500 text-white px-4 py-2 rounded-md">
-    Abrir Ventana Modal
-  </button>
+    {{-- Ejemplo de campo de contraseña con mostrar/ocultar --}}
+    <x-forms.tw_input id="password" name="password" label="Contraseña" type="password" />
 
-  {{-- Botón para mostrar el tw_window (no modal) --}}
-  <button wire:click="toggleWindow" class="bg-green-500 text-white px-4 py-2 rounded-md ml-4">
-    Abrir Ventana No Modal
-  </button>
+    {{-- Ejemplo de checkbox --}}
+    <x-forms.tw_input id="agree" name="agree" label="Acepto los términos" type="checkbox" />
 
-  {{-- Componente tw_windowModal (siempre modal) --}}
-  @if ($showWindowModal)
-  <x-forms.tw_windowModal title="Ventana Modal" width="w-98">
-    <p>Este es el contenido de la ventana modal, centrado en la pantalla con fondo oscuro.</p>
-    <x-slot name="footer">
-      <button wire:click="toggleWindowModal" class="bg-red-500 text-white px-4 py-2 rounded-md">Cerrar</button>
-    </x-slot>
-  </x-forms.tw_windowModal>
-  @endif
+    {{-- Ejemplo de select --}}
+    <x-forms.tw_input id="gender" name="gender" label="Género" type="select"
+      :options="['male' => 'Masculino', 'female' => 'Femenino']" />
+  </form>
 
-  {{-- Componente tw_window (no modal, libre posicionamiento) --}}
-  @if ($showWindow)
-  <x-forms.tw_window title="Ventana No Modal" width="w-80" position="absolute top-20 left-20">
-    <p>Este es el contenido de la ventana no modal. Puedes posicionarla libremente.</p>
-    <x-slot name="footer">
-      <button wire:click="toggleWindow" class="bg-green-500 text-white px-4 py-2 rounded-md">Cerrar</button>
-    </x-slot>
-  </x-forms.tw_window>
-  @endif
-</div>
+  {{-- Footer para los botones de acción del formulario --}}
+  <x-slot name="footer">
+    <button type="submit" form="username" class="bg-blue-500 text-white px-4 py-2 rounded-md">Enviar</button>
+    <button type="button" onclick="" class="bg-red-500 text-white px-4 py-2 rounded-md">Cancelar</button>
+  </x-slot>
+</x-forms.tw_window>
+{{--
+</div> --}}

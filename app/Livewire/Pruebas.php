@@ -32,4 +32,9 @@ class Pruebas extends Component
   {
     $this->showWindow = !$this->showWindow;
   }
+
+  public function submitForm()
+  {
+    return redirect()->route('inicio');
+  }
 }
