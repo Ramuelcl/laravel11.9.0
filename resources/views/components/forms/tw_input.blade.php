@@ -7,7 +7,7 @@
 'name' => '',
 'value' => null,
 'class' => 'font-normal text-blue-500 dark:text-blue-100 block mt-1 w-full rounded-md form-input border-blue-400
-focus:border-blue-600',
+focus:border-blue-600 mb-3',
 'options' => [], // Para el tipo select
 ])
 
@@ -46,7 +46,7 @@ focus:border-blue-600',
     }} {!! $attributes->merge(['class' => $class]) !!} />
   <button type="button" onclick="togglePasswordVisibility('{{ $id ?? $name }}')"
     class="absolute inset-y-0 right-0 px-3 text-gray-500 focus:outline-none">
-    <x-forms.tw_icons name="eye" />
+    <x-forms.tw_icons id="icon-{{ $id ?? $name }}" name="eye" />
   </button>
 </div>
 

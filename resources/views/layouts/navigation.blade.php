@@ -15,7 +15,7 @@
         <div class=" hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
           @php
           $menus=[
-          'acerca de'=>['route'=>'acercade','icon'=>'acercade','titulo'=>'Acerca de...'],
+          'acerca de'=>['route'=>'acercade','icon'=>'','titulo'=>'Acerca de...'],
           'contacto'=>['route'=>'contacto','icon'=>'contacto','titulo'=>'contacto'],
           'iconos'=>['route'=>'iconos','icon'=>'iconos','titulo'=>'iconos'],
           'pruebas'=>['route'=>'pruebas','icon'=>'pruebas','titulo'=>'pruebas'],

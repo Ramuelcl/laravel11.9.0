@@ -14,7 +14,7 @@
   <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
   <!-- Scripts -->
-  @vite(['resources/css/app.css', 'resources/js/app.js'])
+  @vite(['resources/css/app.css','resources/css/styles.css', 'resources/js/app.js', 'resources/js/dark.js'])
   @livewireStyles
 </head>
 
@@ -24,8 +24,8 @@
     <header
       class="bg-lightBg/70 text-lightText/70 dark:bg-darkBg/70 dark:text-darkText/70 shadow font-semibold text-xl leading-tight">
       {{-- Navegación --}}
-      @include('layouts.navigation')
-
+      {{-- @include('layouts.navigation') --}}
+      <x-navigation.primary />
       <!-- Encabezado de la página -->
       @isset($header)
       <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">

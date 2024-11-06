@@ -7,7 +7,7 @@
     display: none !important;
   }
 
-  :root {
+                                /* :root {
     --bg-light: #ffffff;
     --bg-medium: #f3f3f3;
     --bg-dark: #dddddd;
@@ -23,7 +23,7 @@
     --text-color: #000000;
     --text-white: #ffffff;
     --text-black: #000000;
-  }
+  } */
 
     /* * {
       margin: 0;
