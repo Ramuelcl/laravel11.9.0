@@ -1,16 +1,28 @@
-let themeButton = document.getElementById("theme-button");
-let themeLogo = document.getElementById("theme-logo");
+// resources/js/dark.js
 
-let theme = localStorage.getItem("theme");
+document.addEventListener('DOMContentLoaded', () => {
+  let darkMode = localStorage.getItem('darkMode') === 'true';
 
-themeButton.addEventListener("click", () => {
-  if (theme === "light") {
-    theme = "dark";
-    themeLogo.name = "sun";
-  } else if (theme === "dark") {
-    theme = "light";
-    themeLogo.name = "moon";
+  const toggleDarkMode = () => {
+    darkMode = !darkMode;
+    document.documentElement.classList.toggle('dark', darkMode);
+    localStorage.setItem('darkMode', darkMode);
+
+    // Cambiar icono según el modo
+    document.getElementById('icon-sun').style.display = darkMode ? 'block' : 'none';
+    document.getElementById('icon-moon').style.display = darkMode ? 'none' : 'block';
+  };
+
+  // Aplicar el modo oscuro si está almacenado en localStorage
+  if (darkMode) {
+    document.documentElement.classList.add('dark');
+    document.getElementById('icon-sun').style.display = 'block';
+    document.getElementById('icon-moon').style.display = 'none';
+  } else {
+    document.getElementById('icon-sun').style.display = 'none';
+    document.getElementById('icon-moon').style.display = 'block';
   }
 
-  localStorage.setItem("theme", theme);
+  // Asignar el evento de clic al botón
+  document.getElementById('toggle-dark-mode').addEventListener('click', toggleDarkMode);
 });

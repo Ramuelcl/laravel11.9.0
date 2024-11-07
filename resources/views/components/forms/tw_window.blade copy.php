@@ -41,7 +41,7 @@
   const modalContainer = document.getElementById('modalContainer');
   const overlay = document.getElementById('overlay');
   const cerrarBtn = document.getElementById('cerrarBtn');
-  const containerId = @json($containerId);
+  // const containerId = @json($containerId);
 
   function abrirModal(isModal = true) {
     modalContainer.style.display = 'flex';

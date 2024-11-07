@@ -22,10 +22,10 @@ export default {
         darkText: '#ffffff',
         lightBg: '#ffffff',
         lightText: '#1a202c',
-        success: 'bg-green-500',
-        danger: 'bg-red-500',
-        warning: 'bg-yellow-500',
-        info: 'bg-blue-500'
+        success: '#16A34A',
+        danger: '#FF0000',
+        warning: '#FFFF00',
+        info: '#0000FF'
       },
     },
   },

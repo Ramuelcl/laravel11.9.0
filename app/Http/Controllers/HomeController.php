@@ -28,6 +28,8 @@ class HomeController extends Controller
   // Página "todo" (Blade)
   public function pruebas()
   {
+    session()->flash('success', 'Operación realizada con éxito');
+
     return view('pages.pruebas'); // Vista Blade para 'todo'
   }
 }

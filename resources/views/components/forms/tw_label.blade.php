@@ -4,7 +4,6 @@
 
 <label for="{{ $id ?? $name }}" {{ $attributes->merge(['class' => 'block text-sm font-medium leading-6 text-lightText
   dark:text-darkText
-  rounded-md' . $class]) }}
-  >
+  rounded-md' . $class]) }} >
   {{ $slot }}
 </label>
