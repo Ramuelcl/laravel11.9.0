@@ -5,7 +5,7 @@ uso: session()->flash('success', 'Operación realizada con éxito.');
 @if (Session::has('success'))
 <div class="m-2 mb-4 inline-flex w-full overflow-hidden rounded-lg border-2 border-green-700 bg-success shadow-md">
   <div class="flex w-12 items-center justify-center border-r-4">
-    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-blue-700">
+    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-blue-700 border-black border-2">
       <svg class="h-6 w-6 fill-current text-green-800" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
         fill="currentColor">
         <path fill-rule="evenodd"
@@ -28,7 +28,7 @@ uso: session()->flash('success', 'Operación realizada con éxito.');
 @if (Session::has('info'))
 <div class="m-2 mb-4 inline-flex w-full overflow-hidden rounded-lg border-2 border-blue-700 bg-info shadow-md">
   <div class="flex w-12 items-center justify-center border-r-4">
-    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-blue-700">
+    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-blue-700 border-black border-2">
       i
     </div>
   </div>
@@ -46,7 +46,7 @@ uso: session()->flash('success', 'Operación realizada con éxito.');
 {{-- Error --}}
 <div class="m-2 mb-4 inline-flex w-full overflow-hidden rounded-lg border-2 border-red-700 bg-danger shadow-md">
   <div class="flex w-12 items-center justify-center border-r-4">
-    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-red-700">
+    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-red-700 border-black border-2">
       X
     </div>
   </div>
@@ -64,7 +64,7 @@ uso: session()->flash('success', 'Operación realizada con éxito.');
 @if (Session::has('warning'))
 <div class="m-2 mb-4 inline-flex w-full rounded-lg border-2 border-yellow-700 bg-warning shadow-md">
   <div class="flex w-12 items-center justify-center border-r-4">
-    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-red-700">
+    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-red-700 border-black border-2">
       !
     </div>
   </div>

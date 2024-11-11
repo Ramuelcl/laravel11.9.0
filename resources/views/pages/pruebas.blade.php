@@ -13,6 +13,7 @@
   </button>
 
   {{-- Componente tw_windowModal (siempre modal) --}}
+  @isset($showWindowModal)
   @if ($showWindowModal)
   <x-forms.tw_windowModal title="Ventana Modal" width="w-98">
     <p>Este es el contenido de la ventana modal, centrado en la pantalla con fondo oscuro.</p>
@@ -21,8 +22,9 @@
     </x-slot>
   </x-forms.tw_windowModal>
   @endif
-
+  @endisset
   {{-- Componente tw_window (no modal, centrado dentro del contenedor) --}}
+  @isset($showWindow)
   @if ($showWindow)
   <x-forms.tw_window title="Ventana No Modal" width="w-80">
     <p>Este es el contenido de la ventana no modal. Está centrado en el contenedor.</p>
@@ -31,4 +33,5 @@
     </x-slot>
   </x-forms.tw_window>
   @endif
+  @endisset
 </div>

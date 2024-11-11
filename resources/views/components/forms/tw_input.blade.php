@@ -51,8 +51,9 @@ focus:border-blue-600 mb-3',
 </div>
 
 @else
-<input id=" {{ $id ?? $name }}" name="{{ $name }}" type="{{ $type }}" value="{{ $value }}" {{ $disabled ? 'disabled'
-  : '' }} {!! $attributes->merge(['class' => $class]) !!} />
+<input id="{{ $id ?? $name }}" name="{{ $name }}" type="{{ $type }}" value="{{ $value }}" {{ $disabled ? 'disabled' : ''
+  }} {!! $attributes->merge(['class' => $class]) !!} />
+<x-input-error :messages="$errors->get( $name ?? $id)" class="mt-2" />
 @endif
 
 {{-- Script para mostrar/ocultar la contraseña --}}

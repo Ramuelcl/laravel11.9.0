@@ -1,6 +1,6 @@
 <div class="relative inline-block">
   @guest
-  <div class="flex gap-2 p-2 rounded">
+  <div class="flex gap-2 p-2 rounded text-xs">
     <a wire:navigate href="{{ route('register') }}" class="flex gap-2">
       <span> {{ __('Register') }}</span>
     </a>
