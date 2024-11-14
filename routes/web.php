@@ -40,19 +40,21 @@ Route::get('/dashboard', function () {
   return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Route::middleware(['auth'])->group(function () {
-//   Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-//   Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-//   Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-// });
-Route::controller(ProfileController::class)->group(function () {
-  Route::get('/profile', 'index')->name('profile'); // Ruta principal de perfil
-  Route::get('/profile/edit', 'edit')->name('profile.edit'); // Ruta para editar el perfil
-  Route::patch('/profile/update', 'update')->name('profile.update'); // Ruta para actualizar el perfil
-  Route::delete('/profile/destroy', 'destroy')->name('profile.destroy'); // Ruta para eliminar el perfil
-  Route::get('/profile/password', 'edit')->name('profile.password'); // Ruta para cambiar contraseña
-  Route::get('/profile/privacy', 'edit')->name('profile.privacy'); // Ruta para cambiar privacidad
+Route::middleware(['auth'])->group(function () {
+  Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+  Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+  Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+// 
+// para cargar DESDE menu y submenu
+// Route::controller(ProfileController::class)->group(function () {
+//   Route::get('/profile', 'index')->name('profile'); // Ruta principal de perfil
+//   Route::get('/profile/edit', 'edit')->name('profile.edit'); // Ruta para editar el perfil
+//   Route::patch('/profile/update', 'update')->name('profile.update'); // Ruta para actualizar el perfil
+//   Route::delete('/profile/destroy', 'destroy')->name('profile.destroy'); // Ruta para eliminar el perfil
+//   Route::get('/profile/password', 'edit')->name('profile.password'); // Ruta para cambiar contraseña
+//   Route::get('/profile/privacy', 'edit')->name('profile.privacy'); // Ruta para cambiar privacidad
+// });
 
 
 require __DIR__ . '/auth.php';

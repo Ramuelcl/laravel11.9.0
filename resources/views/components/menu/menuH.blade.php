@@ -23,7 +23,7 @@ request()->routeIs('profile.update')],
 
 <!-- Menú principal -->
 @foreach ($menus as $title => $menu)
-<div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative inline-block">
+<div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative inline-block z-50">
   <div
     class="flex items-center {{ !isset($menu['disabled']) || !$menu['disabled'] ? 'group' : 'opacity-50 cursor-not-allowed' }}">
     @if (!isset($menu['disabled']) || !$menu['disabled'])

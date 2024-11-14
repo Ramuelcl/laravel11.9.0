@@ -15,7 +15,9 @@
         </a>
         <div class="flex-1 flex">
           <div class="w-full gap-4 hidden mx-auto lg:flex lg:max-w-[385px] xl:maw-w-[530px] 2xl:max-w-[700px]">
-            @include('components.menu.menuH')
+            {{-- @include('components.menu.menuH') --}}
+            {{-- @include('components.menu.menuTailwind') --}}
+            @livewire('forms.menus')
             @include('components.menu.menu0')
 
             {{--

@@ -6,7 +6,7 @@
 ])
 
 {{-- Contenedor no modal con posición personalizada --}}
-<div class="{{ $position }} {{ $width }} border border-gray-300 rounded-md shadow-lg bg-white dark:bg-gray-800 z-40"
+<div class="{{ $position }} {{ $width }} border border-gray-300 rounded-md shadow-lg bg-white dark:bg-gray-800 z-20"
   id="ventana">
   <div class="bg-blue-500 px-4 py-2 rounded-t-md flex items-center justify-between">
     <span class="text-white font-semibold text-lg">{{ __($title) }}</span>

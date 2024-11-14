@@ -36,8 +36,28 @@ class UserFactory extends Factory
     include($filePath2);
     dump(['filePath' => $filePath, 'email' => $email]);
 
+    // $path=public_path('avatars');
+    // $path2=storage_path();
+    // $path2=public_path().'\\images\\';
+    // $avatar= $this->faker->image($path, 640, 480, null, false);
+
+    // $avatar = $this->faker->image(
+    //     $dir = Storage::path($filePath),
+    //     $width = 640,
+    //     $height = 480,
+    //     $category = getIniciales($prename . ' ' . $name), /* usado como texto sobre la imagen,default null */
+    //     $fullPath = true,
+    //     $randomize = true, // it's a no randomize images (default: `true`)
+    //     $word = null, //it's a filename without path
+    //     $gray = false,
+    //     $format = 'png'
+    // );
+
     $avatar = $this->faker->imageUrl(640, 480, null, false);
 
+    // dd($avatar, $avatar1, public_path('avatars'));
+    // echo($avatar);
+    // TODO: registrar foto en directorio, no se queda, se borra sola inmediatamente
     return [
       'name' => $name . " " . $prename,
       // 'prename' => $prename,
@@ -46,8 +66,8 @@ class UserFactory extends Factory
       'profile_photo_path' => $avatar,
 
       'is_active' => $this->faker->boolean(),
-      'password' => Hash::make('password'),
-      // 'password' => 'password', // setPasswordAttribute
+      // 'password' => Hash::make('password'),
+      'password' => 'password', // setPasswordAttribute
       // 'password' => static::$password ??= Hash::make('password'),
 
       'remember_token' => Str::random(10),
@@ -66,5 +86,25 @@ class UserFactory extends Factory
         'email_verified_at' => null,
       ];
     });
+  }
+
+  /**
+   * Indicate that the user should have a personal team.
+   *
+   * @return $this
+   */
+  public function withPersonalTeam()
+  {
+    if (!Features::hasTeamFeatures()) {
+      return $this->state([]);
+    }
+
+    return $this->has(
+      Team::factory()
+        ->state(function (array $attributes, User $user) {
+          return ['name' => $user->name . '\'s Team', 'user_id' => $user->id, 'personal_team' => true];
+        }),
+      'ownedTeams'
+    );
   }
 }
