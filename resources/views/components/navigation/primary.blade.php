@@ -17,15 +17,16 @@
           <div class="w-full gap-4 hidden mx-auto lg:flex lg:max-w-[385px] xl:maw-w-[530px] 2xl:max-w-[700px]">
             {{-- @include('components.menu.menuH') --}}
             {{-- @include('components.menu.menuTailwind') --}}
-            @livewire('forms.menus')
-            @include('components.menu.menu0')
+            @livewire('forms.menus', ['tabla'=>10020])
+
+            {{-- @include('components.menu.menu0') --}}
 
             {{--
             <x-navigation.searchBar /> --}}
           </div>
           <div class="flex gap-3 ml-auto items-center">
             <x-menu.theme />
-            <x-menu.user />
+            @livewire('forms.menus',['tabla'=>10010])
           </div>
         </div>
       </div>

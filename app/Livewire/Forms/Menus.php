@@ -1,5 +1,4 @@
 <?php
-// <!-- app/livewire/forms/menus.php -->
 
 namespace App\Livewire\Forms;
 
@@ -9,17 +8,24 @@ use Livewire\Component;
 class Menus extends Component
 {
   public $menus = [];
-  public $nivel = 0;
-  public $submenus;
+  public $tablaId;
 
-  public function mount($parentId = 10000)
+  public function mount($tablaId = 10000)
   {
-    $t = new Datos();
-    $this->menus = $t->getMenuData($parentId); // Obtener todos los elementos del menú
-    dd($this->menus);
+    $this->tablaId = $tablaId;
+    $this->loadMenus();
   }
+
+  public function loadMenus()
+  {
+    $tablaModel = new Datos();
+    $this->menus = $tablaModel->getMenu($this->tablaId);
+  }
+
   public function render()
   {
-    return view('livewire.forms.menus');
+    return view('livewire.forms.menus', [
+      'menus' => $this->menus,
+    ]);
   }
 }

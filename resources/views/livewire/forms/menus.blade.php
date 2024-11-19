@@ -1,101 +1,74 @@
-<nav>
+<nav class="bg-lightBg dark:bg-darkBg border-b border-gray-500 dark:border-gray-100">
+  {{-- @dd($menus) --}}
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+    {{--
+    <!-- Logo -->
+    <div class="flex-shrink-0">
+      <a href="/" class="text-xl font-bold text-gray-800">MiLogo</a>
+    </div> --}}
 
-  <!-- Menú principal -->
-  @foreach ($menus as $title => $menu)
-  <div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative inline-block z-50">
-    <div
-      class="flex items-center {{ !isset($menu['disabled']) || !$menu['disabled'] ? 'group' : 'opacity-50 cursor-not-allowed' }}">
-      @if (!isset($menu['disabled']) || !$menu['disabled'])
-      <x-nav-link :href="route($menu['route'])" :active="$menu['active']" class="flex items-center">
-        @isset($menu['icon'])
-        <x-forms.tw_icons name="{{ $menu['icon'] }}" :error="false" />
-        @endisset
-        {{ __($title) }}
-      </x-nav-link>
-      @else
-      <div class="px-2 py-1 rounded-lg flex items-center text-xs">
-        @isset($menu['icon'])
-        <x-forms.tw_icons name="{{ $menu['icon'] }}" :error="false" />
-        @endisset
-        {{ __($title) }}
+      <!-- Menú principal para pantallas grandes -->
+      <div class="hidden md:flex space-x-4">
+        @foreach ($menus as $menu)
+        <div x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false" class="relative">
+          <!-- Enlace principal -->
+          <a href="{{ route($menu['route']) }}"
+            class="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:bg-gray-100 focus:text-gray-900">
+            {{ __($menu['titulo']) }}
+          </a>
+
+          <!-- Submenú para pantallas grandes -->
+          @if (isset($menu['submenu']))
+          <div x-show="open" class="absolute z-50 mt-2 w-48 bg-white shadow-lg rounded-md">
+            <div class="py-1">
+              @foreach ($menu['submenu'] as $submenu)
+              @include('partials.submenu', ['menu' => $submenu])
+              @endforeach
+            </div>
+          </div>
+          @endif
+        </div>
+        @endforeach
       </div>
-      @endif
 
-      <!-- Icono de flecha (solo si 'submenu' es true) -->
-      @if(isset($menu['submenu']) && $menu['submenu'] === true)
-      <svg fill="currentColor" viewBox="0 0 20 20" :class="{ 'rotate-180': open, 'rotate-0': !open }"
-        class="ml-1 h-4 w-4 transform transition-transform duration-200 group-hover:rotate-180">
-        <path fill-rule="evenodd"
-          d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-          clip-rule="evenodd"></path>
-      </svg>
-      @endif
-    </div>
-
-    <!-- Contenedor del submenú (solo si 'submenu' es true) -->
-    @if(isset($menu['submenu']) && $menu['submenu'] === true)
-    <div x-show="open" x-transition:enter="transition ease-out duration-100"
-      x-transition:leave="transition ease-in duration-75"
-      class="bg-lightBg dark:bg-darkBg absolute right-0 mt-2 w-full origin-top-right rounded-md shadow-lg px-2 py-2 md:w-48 z-50">
-
-      @foreach ($submenus as $subTitle => $submenu)
-      @if ($submenu['id'] === $menu['id'])
-      <!-- Submenú anidado -->
-      @if (isset($submenu['submenu']))
-      <div x-data="{ subOpen: false }" @mouseenter="subOpen = true" @mouseleave="subOpen = false" class="relative">
-        <button type="button" class="w-full text-left px-4 py-2 text-sm rounded-md flex items-center">
-          @isset($submenu['icon'])
-          <x-forms.tw_icons name="{{ $submenu['icon'] }}" :error="false" />
-          @endisset
-          {{ __($subTitle) }}
-          <svg fill="currentColor" viewBox="0 0 20 20" :class="{ 'rotate-180': subOpen, 'rotate-0': !subOpen }"
-            class="ml-1 h-4 w-4 transform transition-transform duration-200">
-            <path fill-rule="evenodd"
-              d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-              clip-rule="evenodd"></path>
+      <!-- Botón de menú móvil -->
+      <div class="md:hidden">
+        <button @click="open = !open" x-data="{ open: false }"
+          class="text-gray-500 hover:text-gray-700 focus:outline-none focus:text-gray-700">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="h-6 w-6">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
           </svg>
         </button>
+      </div>
+    </div>
+  </div>
 
-        <!-- Submenú anidado desplegable -->
-        <div x-show="subOpen" x-transition:enter="transition ease-out duration-100"
-          x-transition:leave="transition ease-in duration-75"
-          class="bg-lightBg dark:bg-darkBg absolute left-full top-0 mt-0 w-full origin-top-right rounded-md shadow-lg px-2 py-2 md:w-48 z-50">
-          @foreach ($submenu['submenu'] as $subSubTitle => $subSubmenu)
-          <x-nav-link :href="route($subSubmenu['route'])" :active="$subSubmenu['active']"
-            class="w-full text-left px-4 py-2 text-sm rounded-md {{ isset($subSubmenu['disabled']) && $subSubmenu['disabled'] ? 'opacity-50 cursor-not-allowed' : '' }}">
-            @isset($subSubmenu['icon'])
-            <x-forms.tw_icons name="{{ $subSubmenu['icon'] }}" :error="false" />
-            @endisset
-            {{ __($subSubTitle) }}
-          </x-nav-link>
+  <!-- Menú desplegable móvil -->
+  <div x-data="{ open: false }" x-show="open" @click.away="open = false" class="md:hidden">
+    <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+      @foreach ($menus as $menu)
+      <div x-data="{ open: false }" class="relative">
+        <!-- Enlace principal -->
+        <a href="{{ route($menu['route']) }}"
+          class="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:bg-gray-100 focus:text-gray-900">
+          {{ __($menu['titulo']) }}
+        </a>
+
+        <!-- Submenú para móviles -->
+        @if (isset($menu['submenu']))
+        <button @click="open = !open"
+          class="block px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none">
+          Submenús
+        </button>
+        <div x-show="open" class="mt-2 space-y-1 pl-4 border-l-2 border-gray-200">
+          @foreach ($menu['submenu'] as $submenu)
+          @include('partials.submenu', ['menu' => $submenu])
           @endforeach
         </div>
+        @endif
       </div>
-      @elseif (isset($submenu['method']) && in_array($submenu['method'], ['PATCH', 'DELETE']))
-      <form method="POST" action="{{ route($submenu['route']) }}" class="nav-link">
-        @csrf
-        @method($submenu['method'])
-        <button type="submit" class="w-full text-left px-4 py-2 text-sm rounded-md">
-          @isset($submenu['icon'])
-          <x-forms.tw_icons name="{{ $submenu['icon'] }}" :error="false" />
-          @endisset
-          {{ __($subTitle) }}
-        </button>
-      </form>
-      @else
-      <x-nav-link :href="route($submenu['route'])" :active="$submenu['active']"
-        class="w-full text-left px-4 py-2 text-sm rounded-md">
-        @isset($submenu['icon'])
-        <x-forms.tw_icons name="{{ $submenu['icon'] }}" :error="false" />
-        @endisset
-        {{ __($subTitle) }}
-      </x-nav-link>
-      @endif
-      @endif
       @endforeach
     </div>
-    @endif
   </div>
-  @endforeach
-
 </nav>

@@ -21,7 +21,7 @@ class TablaSeeder extends Seeder
       'is_active' => false,
     ]);
 
-    // menu principal
+    // menu public
     $menus = [
       // 'tabla',
       // 'id',
@@ -42,6 +42,12 @@ class TablaSeeder extends Seeder
         'route' => 'contacto',
         'icon' => '',
       ],
+    ];
+    $this->seedMenu($menus);
+
+    // menu usuario
+    $this->indTabla = $i + 10;
+    $menus = [
       'Register' =>
       [
         'route' => 'register',
@@ -61,7 +67,7 @@ class TablaSeeder extends Seeder
     $this->seedMenu($menus);
 
     // menu usuarios
-    $this->indTabla = $i + 10;
+    $this->indTabla = $i + 20;
     $menus = [
       'Users' =>
       [
@@ -85,7 +91,7 @@ class TablaSeeder extends Seeder
     ];
     $this->seedMenu($menus);
 
-    $this->indTabla = $i + 20;
+    $this->indTabla = $i + 30;
     $menus = [
       'Users' => [
         'icono' => 'users',
