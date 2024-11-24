@@ -1,16 +1,12 @@
 <?php
 // routes/web.php
 use App\Http\Controllers\banca\TraspasoBancaController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Livewire\Pages\Contacto;
 use App\Livewire\Pruebas;
 use Illuminate\Support\Facades\Route;
-
-Route::get('/import', function () {
-    return view('import');
-});
-Route::post('/import', [TraspasoBancaController::class, 'import'])->name('traspaso-banca.import');
 
 // Route::get('/test-messages', function () {
 //   // Establecer diferentes tipos de mensajes de sesión para probar el componente
@@ -23,10 +19,10 @@ Route::post('/import', [TraspasoBancaController::class, 'import'])->name('traspa
 // });
 // sistema BANCA
 Route::group(['prefix' => 'banca'], function () {
-    Route::get('/traspasos', [ImportExportController::class, 'showImportForm'])->name('banca.showImportForm');
-    Route::get('/clientes', [ImportExportController::class, 'clientes'])->name('banca.clientes');
-    Route::post('/traspasos/duplicados', [ImportExportController::class, 'eliminarRegistrosDuplicados'])->name('banca.eliminar.duplicados');
-    Route::post('/traspasos/movimientos', [ImportExportController::class, 'TraspasoAMovimientos'])->name('banca.crearMovimientos');
+    Route::get('/traspasos', [TraspasoBancaController::class, 'showImportForm'])->name('banca.showImportForm');
+    Route::post('/traspasos', [TraspasoBancaController::class, 'import'])->name('banca.import');
+    Route::post('/traspasos/duplicados', [TraspasoBancaController::class, 'eliminarRegistrosDuplicados'])->name('banca.eliminar.duplicados');
+    Route::post('/traspasos/movimientos', [TraspasoBancaController::class, 'crearMovimientos'])->name('banca.crearMovimientos');
 });
 Route::controller(HomeController::class)->group(function () {
   Route::get('/', 'welcome')->name('inicio'); // Blade
@@ -47,9 +43,9 @@ Route::get('/portfolio', Pruebas::class)->name('portfolio');
 //     return view('welcome');
 // })->name('inicio');
 
-Route::get('/dashboard', function () {
-  return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::group(['prefix' => 'dashboard'], function () {
+  Route::get('/',  [DashboardController::class, 'index'])->name('dashboard.index');
+})->middleware(['auth', 'verified']);
 
 Route::middleware(['auth'])->group(function () {
   Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -23,7 +23,7 @@ class ImportExportController extends Controller
 
     public function showImportForm()
     {
-        $titulos = [
+      public  $titulos = [
             'id',
             'Date',
             'Libelle',
@@ -33,7 +33,7 @@ class ImportExportController extends Controller
             '# movimiento'
         ];
 
-        $campos = [
+      public  $campos = [
             'id',
             'date',
             'libelle',
@@ -45,7 +45,7 @@ class ImportExportController extends Controller
         $totalImportados = Traspaso::count();
         $totalMovimientos = Traspaso::whereNotNull('IdArchMov')->count();
 
-        $registrosDuplicados = DB::table('traspasos_banca')
+        $registrosDuplicados = DB::table('traspasosBanca')
             ->select(DB::raw("GROUP_CONCAT(CONCAT(Date, Libelle, MontantEUROS) SEPARATOR ', ') AS concat"))
             ->groupBy('Date', 'Libelle', 'MontantEUROS')
             ->havingRaw('COUNT(*) > 1')

@@ -1,26 +1,79 @@
 <?php
-// app/Imports/TraspasoBancaImport.php
 
 namespace App\Imports;
 
-use App\Models\TraspasoBanca;
-use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use App\Models\Banca\TraspasoBanca as Traspaso;
+use App\Services\clsFileReader;
 
-class TraspasoBancaImport implements ToModel, WithHeadingRow
+class TraspasoBancaImport
 {
-    /**
-     * Transformar cada fila del archivo importado a un modelo.
-     *
-     * @param array $row
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    public function model(array $row)
+    public $nombreOriginal;
+    public $config;
+
+    public function __construct($nombreArchivo, $config)
     {
-        return new TraspasoBanca([
-            'campo1' => $row['campo1'],  // Asegúrate de usar el nombre de la columna correcto
-            'monto'  => $row['monto'],
-            'fecha'  => \Carbon\Carbon::parse($row['fecha']),
-        ]);
+        $this->nombreOriginal = $nombreArchivo;
+        $this->config = $config;
+    }
+
+    public function import($file)
+    {
+        // Leer y procesar el archivo
+        $rows = $this->parseFile($file);
+
+        foreach ($rows as $row) {
+            try {
+                // Crear un modelo y asignar valores
+                $model = new Traspaso();
+                $model->Date = $this->sanitizeDate($row['Date'] ?? null);
+                $model->Libelle = $this->sanitize($row['Libelle'] ?? null);
+                $model->MontantEUROS = $this->sanitize($row['MontantEUROS'] ?? null);
+                $model->MontantFRANCS = $row['MontantFRANCS'] ?? 0;
+                $model->NomArchTras = $this->nombreOriginal;
+                $model->save();
+            } catch (\Illuminate\Database\QueryException $e) {
+                if ($e->getCode() === '23000') {
+                    // Registro duplicado, saltar
+                    continue;
+                } else {
+                    throw $e; // Otros errores
+                }
+            }
+        }
+    }
+
+    /**
+     * Leer el archivo usando clsFileReader
+     */
+    private function parseFile($file)
+    {
+        $reader = new clsFileReader($file->getRealPath(), $this->config['separadorCampos'], $this->config['caracterString']);
+        $rows = $reader->readAll();
+
+        return $rows ?: []; // Retorna las filas o un array vacío
+    }
+
+    /**
+     * Limpia un valor eliminando caracteres no válidos
+     */
+    private function sanitize($value)
+    {
+        return $value ? preg_replace('/[^\x20-\x7E]/', '', $value) : null;
+    }
+
+    /**
+     * Convierte un string de fecha al formato YYYY-MM-DD
+     */
+    private function sanitizeDate($value)
+    {
+        if (!$value) {
+            return null;
+        }
+
+        try {
+            return \Carbon\Carbon::createFromFormat('d/m/Y', $value)->format('Y-m-d');
+        } catch (\Exception $e) {
+            return null; // Fecha inválida
+        }
     }
 }

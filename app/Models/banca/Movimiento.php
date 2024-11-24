@@ -11,7 +11,7 @@ class Movimiento extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'movimientos';
+    protected $table = 'movimientosBanca';
 
     /**
      * The attributes that aren't mass assignable.

@@ -15,6 +15,13 @@
         </a>
         <div class="flex-1 flex">
           <div class="w-full gap-4 hidden mx-auto lg:flex lg:max-w-[385px] xl:maw-w-[530px] 2xl:max-w-[700px]">
+            <nav class="text-base pt-5">
+              <ul>
+                <li>
+                  <a href="{{ route('banca.showImportForm') }}">Importar Banca</a>
+                </li>
+              </ul>
+            </nav>
             {{-- @include('components.menu.menuH') --}}
             {{-- @include('components.menu.menuTailwind') --}}
             @livewire('forms.menus', ['tabla'=>10020])

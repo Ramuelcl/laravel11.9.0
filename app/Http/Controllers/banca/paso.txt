@@ -1,0 +1,746 @@
+// sistema BANCA
+Route::group(['prefix' => 'banca'], function () {
+    Route::get('/traspasos', [TraspasoBancaController::class, 'showImportForm'])->name('banca.showImportForm');
+    Route::post('/traspasos', [TraspasoBancaController::class, 'import'])->name('banca.import');
+    Route::post('/traspasos/duplicados', [TraspasoBancaController::class, 'eliminarRegistrosDuplicados'])->name('banca.eliminar.duplicados');
+    Route::post('/traspasos/movimientos', [TraspasoBancaController::class, 'TraspasoAMovimientos'])->name('banca.crearMovimientos');
+});
+el menu: 
+<nav class="text-base pt-5">
+<ul>
+  <li>
+    <a href="{{ route('banca.showImportForm') }}">Importar Banca</a>
+  </li>
+</ul>
+</nav>
+el controlador: 
+<?php
+// app\Http\Controllers\banca\traspasoBancaController.php
+
+namespace App\Http\Controllers\banca;
+
+use App\Http\Controllers\Controller;
+use App\Imports\TraspasoBancaImport;
+
+use App\Models\banca\Movimiento;
+use App\Models\banca\TraspasoBanca as Traspaso;
+use Carbon\Carbon;
+use DateTime, Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+
+class traspasoBancaController extends Controller
+{
+    public $mensajes = [];
+
+    public function showImportForm()
+    {
+        $titulos = [
+            'id',
+            'Date',
+            'Libelle',
+            'EURES',
+            'FRANCS',
+            'archivo traspaso',
+            '# movimiento'
+        ];
+
+        $campos = [
+            'id',
+            'date',
+            'libelle',
+            'montantEUROS',
+            'montantFRANCS',
+            'NomArchTras',
+            'IdArchMov'
+        ];
+        $totalImportados = Traspaso::count();
+        $totalMovimientos = Traspaso::whereNotNull('IdArchMov')->count();
+
+        $registrosDuplicados = DB::table('traspasosBanca')
+            ->select(DB::raw("GROUP_CONCAT(CONCAT(Date, Libelle, MontantEUROS) SEPARATOR ', ') AS concat"))
+            ->groupBy('Date', 'Libelle', 'MontantEUROS')
+            ->havingRaw('COUNT(*) > 1')
+            ->get();
+
+        $totalDuplicados = $registrosDuplicados->count();
+
+     // Obtener todos los datos sin paginación
+        $data = Traspaso::orderBy('created_at', 'desc')->get(); // Obtener todos los registros
+
+        // Pasar los datos completos a la vista
+        return view('banca.traspasoBanca', [
+            'data' => $data, // Todos los registros
+            'titulos' => $titulos,
+            'campos' => $campos,
+            'totalImportados' => $totalImportados,
+            'totalMovimientos' => $totalMovimientos,
+            'totalDuplicados' => $totalDuplicados
+        ]);
+    }
+
+    public function import(Request $request)
+    {
+        // dd($request);
+
+        // Validar el archivo enviado por el formulario
+        $request->validate([
+            'archivo' => 'required|array',
+            'archivo.*' => 'file|mimes:csv,txt,tsv|max:2048',
+        ], [
+            'archivo.required' => 'El campo archivo es requerido.',
+            'archivo.array' => 'El campo archivo debe ser un arreglo.',
+            'archivo.*.file' => 'El archivo seleccionado no es válido.',
+            'archivo.*.mimes' => 'El archivo debe tener una de las siguientes extensiones: csv, txt, tsv.',
+            'archivo.*.max' => 'El tamaño máximo permitido para el archivo es de 2048 KB.',
+        ]);
+
+
+        $cnfTraspaso = [
+            'separadorCampos' => $request->input('separador_campos'),
+            'caracterString' => $request->input('caracter_string'),
+            'finLinea' => $request->input('fin_linea'),
+            'lineaEncabezados' => $request->input('linea_encabezados'),
+        ];
+        // Obtener los archivos enviados desde el formulario
+        $archivos = $request->file('archivo');
+        foreach ($archivos as $archivo) {
+
+            // Obtener el nombre original del archivo
+            $nombreOriginal = $archivo->getClientOriginalName();
+            // $extension = $archivo->getClientOriginalExtension();
+
+            // dd($archivo, $nombreOriginal, $extension);
+
+            // Verificar si el archivo ya ha sido importado
+            if ($this->checkFileImported($nombreOriginal)) {
+                // dump(['Archivo ya traspasado: ' => $archivo]);
+                $mensajes['error'] = "Archivo ya traspasado: $nombreOriginal";
+                session()->put('error', $mensajes);
+            } else {
+                // Procede con la importación del archivo
+                // try {
+                // Determinar los campos y columnas correspondientes según la extensión del archivo
+                $camposTabla = [
+                    'Date',
+                    'Libelle',
+                    'MontantEUROS',
+                    'MontantFRANCS',
+                    'NomArchTras'
+                    // 'Date' => 'date',
+                    // 'Libelle' => 'text',
+                    // 'MontantEUROS' => 'decimal,2',
+                    // 'MontantFRANCS' => 'decimal,2',
+                    // 'NomArchTras'
+                ];
+
+                // Columnas del archivo
+                $camposArchivo = [
+                    'Date',
+                    'Libelle',
+                    'MontantEUROS',
+                    'MontantFRANCS',
+                ];
+                // dd(['camposTabla' => $camposTabla, 'camposArchivo' => $camposArchivo]);
+
+                // Crear una instancia de TraspasoBancaImport con los parámetros necesarios
+                $importador = new TraspasoBancaImport($nombreOriginal, $cnfTraspaso, $camposTabla); //, $camposArchivo
+                // Importar los datos del archivo
+                // dd(['archivo' => $archivo]);
+                $importador->import($archivo);
+                // dd(['importador' => $importador]);
+
+                // Redireccionar o mostrar un mensaje de éxito
+                $mensajes['success'] = "El archivo ($nombreOriginal) se ha importado.";
+                session()->put('success', $mensajes);
+                // } catch (\Exception $e) {
+                //     // dd($archivo, $e->getMessage());
+                //     $mensajes['error'] = 'Ha ocurrido un error al importar el archivo: ' . $e->getMessage();
+                //     session()->put('error', $mensajes);
+                // }
+            }
+        }
+        // Session::flash('session', $mensajes);
+        // dd("PARAR");
+        return redirect()->back();
+    }
+
+    public function checkFileImported($nombreArchivo)
+    {
+        try {
+            $count = Traspaso::where('NomArchTras', $nombreArchivo)->count();
+        } catch (\Throwable $th) {
+            $count = 0;
+        }
+
+        return $count > 0;
+    }
+
+    public function eliminarRegistrosDuplicados()
+    {
+        // dd('eliminarRegistrosDuplicados');
+        $registrosDuplicados = Traspaso::selectRaw('MIN(id) as min_id, CONCAT(Date, Libelle, MontantEUROS, MontantFRANCS) as concatFields')
+            ->groupBy('Date', 'Libelle', 'MontantEUROS', 'MontantFRANCS')
+            ->havingRaw('COUNT(*) > 1')
+            ->get();
+
+        foreach ($registrosDuplicados as $registro) {
+            Traspaso::where('id', '<>', $registro->min_id)
+                ->whereRaw('CONCAT(Date, Libelle, MontantEUROS, MontantFRANCS) = ?', [$registro->concatFields])
+                ->delete();
+        }
+
+        return redirect()->back()->with('success', 'Registros duplicados eliminados correctamente');
+    }
+
+    public function TraspasoAMovimientos()
+    {
+        // Obtener los registros sin idArchMov de la tabla traspasos
+        try {
+            $registros = Traspaso::whereNull('idArchMov')->get();
+            if ($registros) {
+                foreach ($registros as $registro) {
+                    // Crear un nuevo registro en la tabla movimiento_bancas
+                    $movimiento = new Movimiento();
+
+                    // dump($registro);
+                    try {
+                        $fechaFormateada = $this->convertirFecha($registro->date, 'd/m/Y');
+                        // dd($fechaFormateada);
+                        $montoFormateado = $this->castearDato($registro->montantEUROS, 'float');
+                        // dd(['fecha' => $fechaFormateada, 'monto' => $montoFormateado]);
+                        $movimiento->dateMouvement = $fechaFormateada;
+                        $movimiento->libelle = $registro->libelle;
+                        $movimiento->montant = $registro->montantEUROS; //$montoFormateado;
+                        $movimiento->estado = 1; // Traspasada
+                        //
+                        // dd($movimiento);
+
+                        $movimiento->save();
+
+                        // Obtener el id del movimiento guardado
+                        $idMovimiento = $movimiento->id;
+                        // dd($idMovimiento);
+                        // Actualizar el campo idArchMov en la tabla traspasos
+                        $registro->idArchMov = $idMovimiento;
+                        $registro->save();
+                    } catch (\Throwable $e) {
+                        // Manejar el error
+                        // Puedes registrar el error, mostrar un mensaje o realizar alguna otra acción según tus necesidades
+                        // Por ejemplo, puedes usar Log::error($e->getMessage()) para registrar el error en los logs
+                        Log::error($e->getMessage());
+                    }
+                }
+            } else {
+                return redirect()->back()->with('success', 'No hay registros a mover');
+            }
+        } catch (\Throwable $e) {
+            // Manejar el error
+            // Puedes registrar el error, mostrar un mensaje o realizar alguna otra acción según tus necesidades
+            // Por ejemplo, puedes usar Log::error($e->getMessage()) para registrar el error en los logs
+            Log::error($e->getMessage());
+        }
+        return redirect()->back()->with('success', 'Registros movidos correctamente');
+    }
+
+    protected function castearDato($valor, $forzarTipo)
+    {
+        $valor2 = null;
+        switch ($forzarTipo) {
+            case 'alpha':
+                try {
+                    $valor2 = ctype_alpha($valor) ? $valor : null;
+                } catch (\Throwable $e) {
+                    $valor2 = null;
+                    error_log("Error en castearDato: " . $e->getMessage());
+                }
+                break;
+            case 'digit':
+                try {
+                    $valor2 = ctype_digit($valor) ? $valor : null;
+                } catch (\Throwable $e) {
+                    $valor2 = null;
+                    error_log("Error en castearDato: " . $e->getMessage());
+                }
+                break;
+            case 'float':
+                try {
+                    $valor2 = $this->convertirStringANumerico($valor);
+                    $valor2 = is_numeric($valor2) ? floatval($valor2) : null;
+                } catch (\Throwable $e) {
+                    $valor2 = null;
+                    error_log("Error en castearDato: " . $e->getMessage());
+                }
+                break;
+            case 'bool':
+                try {
+                    $valor2 = filter_var($valor, FILTER_VALIDATE_BOOLEAN);
+                } catch (\Throwable $e) {
+                    $valor2 = null;
+                    error_log("Error en castearDato: " . $e->getMessage());
+                }
+                break;
+            case 'date1':
+                try {
+                    $valor2 = $this->parsearFecha($valor);
+                } catch (\Throwable $e) {
+                    $valor2 = null;
+                    error_log("Error en castearDato: " . $e->getMessage());
+                }
+                break;
+            case 'date2':
+                try {
+                    $valor2 = $this->parsearFecha2($valor);
+                } catch (\Throwable $e) {
+                    $valor2 = null;
+                }
+                break;
+            case 'date3':
+                try {
+                    $valor2 = $this->parsearFecha2($valor);
+                } catch (\Throwable $e) {
+                    $valor2 = null;
+                }
+                break;
+            case 'datetime':
+                try {
+                    $valor2 = $this->parsearFechaHora($valor);
+                } catch (\Throwable $e) {
+                    $valor2 = null;
+                }
+                break;
+        }
+        return $valor2;
+    }
+
+    function convertirStringANumerico($valor)
+    {
+        // Obtener el separador decimal actual
+        $separadorDecimalActual = localeconv()['decimal_point'];
+
+        // Reemplazar el separador decimal actual por un punto decimal
+        $valorConPuntoDecimal = str_replace($separadorDecimalActual, '.', $valor);
+
+        // Convertir el string en un valor numérico
+        $valorNumerico = floatval($valorConPuntoDecimal);
+
+        return $valorNumerico;
+    }
+function convertirFecha($fechaString, $formatoEntrada = 'd/m/Y') {
+    $fecha = DateTime::createFromFormat($formatoEntrada, $fechaString);
+    return $fecha ? $fecha->format('Y-m-d') : null; // Devuelve null si la conversión falla
+}
+
+    private function parsearFecha($valor)
+    {
+        if ($valor)
+            try {
+                $fecha = DateTime::createFromFormat('Y-m-d', $valor);
+                return $fecha->format('Y-m-d');
+            } catch (Exception $e) {
+                // Error al parsear la fecha
+                return null;
+            }
+    }
+
+
+    protected function parsearFechaHora($valor)
+    {
+        try {
+            return new DateTime($valor);
+        } catch (Exception $e) {
+            // Error al parsear la fecha
+            return null;
+        }
+    }
+
+    public function parsearFecha2($valor, $viene = "dd/mm/YY")
+    {
+        try {
+            switch ($viene) {
+                case "dd/mm/YY":
+                    // Intentar formatear la fecha en el formato d/m/Y (dd/mm/YY)
+                    $fechaCarbon = Carbon::createFromFormat('d/m/Y', $valor);
+                    break;
+                case "YY/mm/dd":
+                    // Intentar formatear la fecha en el formato Y/m/d (YY/mm/dd)
+                    $fechaCarbon = Carbon::createFromFormat('Y/m/d', $valor);
+                    break;
+                default:
+                    throw new \Exception('Formato de fecha inválido');
+                    break;
+            }
+        } catch (\Throwable $e) {
+            dd($e);
+            // Si ocurre un error, devolver un valor predeterminado o indicador de fecha inválida
+            return null; // Valor predeterminado o indicador de fecha inválida
+        }
+        return $fechaCarbon; //->format('Ymd');
+    }
+    public function parsearFecha3($valor, $viene = "dd/mm/YY")
+    {
+        $fechaObjeto = DateTime::createFromFormat($viene, $valor);
+        $fechaConvertida = $fechaObjeto->format('Ymd');
+        return $fechaConvertida;
+    }
+}
+clase para el traspaso:
+<?php
+// app\Imports\TraspasoBancaImport.php
+
+namespace App\Imports;
+
+use App\Imports\clsFileReader;
+use App\Models\banca\TraspasoBanca as Traspaso;
+
+use Exception;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+class TraspasoBancaImport extends clsFileReader
+{
+    public $fileReader;
+
+    public $nombreOriginal;
+
+    public $camposTabla;
+    public $camposArchivo;
+    public $cnfTraspaso;
+
+    public function __construct($nombreArchivo, $cnfTraspaso, $camposTabla, $camposArchivo = null)
+    {
+
+        // Crear una instancia de clsFileReader y configurar opciones personalizadas
+        $this->fileReader = new clsFileReader($nombreArchivo);
+        // $this->fileReader->determinarOpcionesPorDefecto();
+        $this->fileReader->setConfig($cnfTraspaso);
+
+        $this->nombreOriginal = $nombreArchivo;
+        $this->camposTabla = $camposTabla;
+        $this->camposArchivo = $camposArchivo;
+        // dd(['fileReader' => $this->fileReader]);
+    }
+
+    public function import($file)
+    {
+        $row = [];
+        $this->createTablaTraspasos();
+        $asArray = true;
+        // Leer el archivo línea por línea
+        $this->fileReader->open($file);
+
+        // dd('llegó import');
+        $lineas = 0;
+        while (($line = $this->fileReader->readLines()) !== false) {
+            $lineas++;
+            // Obtener datos de la línea actual
+            // dump([$line, 'lineas' => $lineas, 'encabezado empieza=' => $this->fileReader->letLineaEncabezado()]);
+            if ($lineas == $this->fileReader->letLineaEncabezado() && $this->camposArchivo === null) {
+                $this->fileReader->determinarOpcionesPorDefecto();
+                $this->camposArchivo = $this->fileReader->parseLine($line);
+                // dump(['camposArchivo' => $this->camposArchivo]);
+                continue;
+            }
+            if ($lineas < $this->fileReader->letLineaEncabezado()) {
+                continue;
+            }
+
+            // dump("leyó linea: " . $line);
+            // recupera la linea particionada en un arreglo
+            try {
+                $row = $this->fileReader->parseLine($line, $this->camposArchivo); //para ser asociativos, asigno nombres
+            } catch (\Throwable $th) {
+                dd("que pasa");
+                throw $th;
+            }
+            // dd(["separó linea: " => $row]);
+
+            if (sizeof($row) < sizeof($this->camposArchivo)) {
+                // debo reconocer cual es el que falta
+                $row['MontantFRANCS'] = 0;
+            }
+
+            $libelle = $this->fncConvertirCadenaBytes($row[$this->camposArchivo[1]]);
+    $modelo = new Traspaso();
+
+    $modelo->Date = $this->limpiarStringASCII($row[$this->camposArchivo[0]]);
+    $modelo->Libelle = $this->limpiarStringASCII($libelle);
+    $modelo->MontantEUROS = $this->limpiarStringASCII($row[$this->camposArchivo[2]]);
+    if (array_key_exists(3, $this->camposArchivo) && array_key_exists($this->camposArchivo[3], $row)) {
+        $modelo->MontantFRANCS = $this->limpiarStringASCII($row[$this->camposArchivo[3]]);
+    } else {
+        $modelo->MontantFRANCS = 0;
+    }
+
+    $modelo->NomArchTras = $this->nombreOriginal;
+
+    try {
+        $modelo->save();
+    } catch (\Illuminate\Database\QueryException $ex) {
+        if ($ex->getCode() === '23000') {
+            // \Log::info('Registro duplicado saltado: ' . $ex->getMessage());
+            continue; // Salta al siguiente registro
+        } else {
+            throw $ex; // Lanza otros errores
+        }
+    }
+            }            // dump("crea registro");
+
+        $this->fileReader->close();
+    }
+
+    function fncConvertirCadenaBytes($string, $default = 'UTF-8')
+    {
+        $encodings = array('UTF-8', 'ISO-8859-1', 'Windows-1251');
+        $validEncoding = false;
+        foreach ($encodings as $encoding) {
+            if (mb_check_encoding($string, $encoding)) {
+                $validEncoding = true;
+                // echo "La cadena está codificada en $encoding";
+                $string = mb_convert_encoding($string, $default, $encoding);
+                break;
+            }
+        }
+        if (!$validEncoding) {
+            echo "La cadena no está codificada en ninguna de las codificaciones admitidas";
+        }
+        return $string;
+    }
+function limpiarStringASCII($valor) {
+    return preg_replace('/[^\x20-\x7E]/', '', $valor);
+}
+
+    private function fncTransfiereDato($valor, $tipoDato = 0)
+    {
+        // dump(['fncTransfiereDato' => $valor, $tipoDato]);
+        if ($tipoDato === 'integer') {
+            $value            = (int) $valor;
+            // dump($value);
+            return $value;
+        } elseif ($tipoDato === 'date') {
+            $value          =  date('Y/d/m', strtotime($valor));
+            // dump($value);
+            return $value;
+        } elseif (strpos($tipoDato, 'decimal') !== false) {
+            $precision = explode(',', $tipoDato)[1] ?? 2;
+            $value          = number_format((float) $valor, $precision, '.', '');
+            // dump($value);
+            return $value;
+        } else {
+            $value          = (string) $valor;
+            // dump($value);
+            return $value;
+        }
+    }
+
+    public function createTablaTraspasos()
+    {
+      $t=new Traspaso();
+      $table=$t->table();
+        try {
+            // Crear la tabla $table
+            if (!Schema::hasTable($table)) {
+                DB::statement("
+            CREATE TABLE $table (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                Date VARCHAR(10),
+                Libelle TEXT,
+                MontantEUROS VARCHAR(15),
+                MontantFRANCS VARCHAR(15),
+                NomArchTras VARCHAR(100),
+                IdArchMov BIGINT(10)
+                )
+            ");
+                echo "La tabla $table ha sido creada exitosamente.<br>";
+            }
+
+            // Vaciar la tabla si tiene datos
+            $count = DB::table($table)->count();
+            if ($count > 0) {
+                //     DB::table('$table')->truncate();
+                // echo "La tabla $table ha sido vaciada.<br>";
+            }
+            //
+            if ($count == 0) {
+                DB::statement("ALTER TABLE $table AUTO_INCREMENT = 1;");
+                echo "La tabla traspaso_bancas tiene el incrementador en 1.<br>";
+            }
+        } catch (\Exception $e) {
+            echo "Error al crear, vaciar o poner a 1 el AUTO_INCREMENT de la tabla $table: " . $e->getMessage() . "<br>";
+        }
+    }
+}
+y la vista:
+<x-app-layout>
+  {{-- resources/views/banca/traspasoBanca.blade.php --}}
+  <x-slot name="header">
+    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+      {{ __('Laravel 10 Import Export CSV And EXCEL File - Techsolutionstuff') }}
+    </h2>
+  </x-slot>
+
+  {{-- controla todos los mensajes --}}
+  <x-forms.msgErrorsSession :errors="$errors" :success="session('success', [])" />
+
+  <!-- Formulario de importación -->
+  <div class="mx-6 my-6">
+    <form method="POST" action="{{ route('banca.import') }}" enctype="multipart/form-data">
+      @csrf
+      <!-- Token CSRF para el primer formulario -->
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <!-- Contenido de la primera columna -->
+          <div class="mb-4">
+            <x-forms.tw_input label="Archivo:" placeholder="selecciona un archivo" type="file" name="archivo[]"
+              id="archivo" multiple required />
+          </div>
+
+          <div class="mb-4">
+            <x-forms.tw_input type="select" label="Separador de campos:" name="separador_campos" id="separador_campos"
+              :options="[
+                    ',' => 'Coma (,)', 
+                    ';' => 'Punto y coma (;)', 
+                    '\t' => 'Tabulación (\\t)', 
+                ]" />
+
+            <x-forms.tw_input type="select" label="Fin de línea:" name="fin_linea" id="fin_linea" :options="[
+                    '\n' => 'LF (Salto de línea \\n)',
+                    '\r' => 'CR (Retorno de carro \\r)',
+                    '\r\n' => 'CR+LF (Retorno de carro + Salto de línea \\r\\n)',
+                    '\x85' => 'NEL (Nueva línea de siguiente línea \\x85)',
+                    '\u2028' => 'LS (Separador de línea \\u2028)',
+                    '\x0B' => 'VT (Tabulación vertical \\x0B)',
+                ]" />
+          </div>
+        </div>
+
+        <div>
+          <!-- Contenido de la segunda columna -->
+          <div class="mb-4">
+            <x-forms.tw_input type="select" label="Carácter para los strings:" name="caracter_string"
+              id="caracter_string" :options="[
+                    'single_quotes' => 'Comillas simples (' . chr(39) . ')',
+                    'double_quotes' => 'Comillas dobles (' . chr(34) . ')',
+                ]" />
+          </div>
+
+          <div class="mb-4">
+            <label for="linea_encabezados">Línea encabezados:</label>
+            <x-forms.tw_input type="text" name="linea_encabezados" id="linea_encabezados" required value="8" />
+          </div>
+
+          <div class="mb-4 flex justify-center mt-8">
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+              Importar CSV/TSV</button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="flex divide-x-4 justify-between mx-10">
+    <div class="my-4">
+      <div class="text-center md:text-left">
+        <span class="font-bold">Total importados:</span> <span class="font-bold">{{ $totalImportados }}</span>
+      </div>
+    </div>
+    @if ($totalDuplicados)
+    <div class="my-4">
+      <div class="text-center md:text-left">
+        <span class="font-bold">Registros duplicados:</span> <span class="font-bold">{{ $totalDuplicados }}</span>
+      </div>
+      <form action="{{ route('banca.eliminar.duplicados') }}" method="POST" class="mt-4>">
+        @csrf
+        <!-- Token CSRF para el segundo formulario -->
+        <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Eliminar
+          Registros Duplicados</button>
+      </form>
+    </div>
+    @endif
+    <div class="my-4">
+      <div class="text-center md:text-left">
+        <span class="font-bold">Total movimientos:</span> <span class="font-bold">{{ $totalMovimientos }}</span>
+      </div>
+      @if (!$totalDuplicados && $totalImportados > $totalMovimientos)
+      <form action="{{ route('banca.crearMovimientos') }}" method="POST" class="mt-4">
+        @csrf
+        <!-- Token CSRF para el tercer formulario -->
+        <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded">
+          Pasar registros traspasados a la tabla de movimientos
+        </button>
+      </form>
+      @endif
+    </div>
+  </div>
+
+  <!-- Aquí muestra la grilla de datos -->
+  @if ($data)
+  {{-- @dd($data) --}}
+  @livewire('tables.live-tabla', [
+  'data' => $data, // Pasamos todos los datos (sin paginación)
+  'encabezado' => 'Datos Transferidos',
+  'titulos' => $titulos,
+  'campos' => $campos
+  ])
+  @endif
+
+  </div>
+  @push('styles')
+  <!-- Estilos específicos de la importación -->
+  {{-- @wireuiStyles --}}
+  @endpush
+
+  @push('scripts')
+  <!-- Scripts específicos de la importación -->
+  {{-- @wireuiScripts --}}
+  @endpush
+
+  @push('modals')
+  <!-- Modales específicos de la importación -->
+  <!-- Agrega aquí tus modales -->
+  @endpush
+</x-app-layout>
+
+el que lee el archivo a traspazar y definir sus campos: 
+<?php
+
+namespace App\Services;
+
+class clsFileReader
+{
+    private $filePath;
+    private $delimiter;
+    private $enclosure;
+
+    public function __construct($filePath, $delimiter = ',', $enclosure = '"')
+    {
+        $this->filePath = $filePath;
+        $this->delimiter = $delimiter;
+        $this->enclosure = $enclosure;
+    }
+
+    /**
+     * Leer todas las filas del archivo como un array asociativo
+     */
+    public function readAll()
+    {
+        if (!file_exists($this->filePath)) {
+            throw new \Exception("Archivo no encontrado: " . $this->filePath);
+        }
+
+        $rows = [];
+        if (($handle = fopen($this->filePath, 'r')) !== false) {
+            $headers = fgetcsv($handle, 0, $this->delimiter, $this->enclosure); // Obtener encabezados
+
+            while (($data = fgetcsv($handle, 0, $this->delimiter, $this->enclosure)) !== false) {
+                $rows[] = array_combine($headers, $data); // Combina encabezados con valores
+            }
+
+            fclose($handle);
+        }
+
+        return $rows;
+    }
+}
