@@ -1,4 +1,5 @@
 <?php
+// app/Models/backend/Tabla.php
 
 namespace App\Models\backend;
 
@@ -8,87 +9,115 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Tabla extends Model
 {
-  use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes;
 
-  protected $table = 'tablas';
-  protected static $st_menus = [];
+    protected $table = 'tablas';
 
-  protected $guarded = [];
+    // Menús cargados en la instancia actual del modelo
+    private $menus = [];
 
-  protected $casts = [
-    'tabla' => 'integer',
-    'tabla_id' => 'integer',
-    'is_active' => 'boolean',
-    'valores' => 'array',
-  ];
+    protected $guarded = [];
 
-  /**
-   * Obtiene el menú de una tabla específica.
-   */
-  public function getMenu($tabla)
-  {
-    // dump($tabla);
-    if (isset(self::$st_menus[$tabla])) {
-      return self::$st_menus[$tabla];
-    }
+    protected $casts = [
+        'tabla' => 'integer',
+        'tabla_id' => 'integer',
+        'is_active' => 'boolean',
+        'valores' => 'array', // Decodifica automáticamente los valores JSON
+    ];
 
-    if (empty(self::$st_menus)) {
-      $this->loadMenus(10000, 10999);
-    }
-
-    return self::$st_menus[$tabla] ?? [];
-  }
-
-  /**
-   * Carga todos los menús entre dos rangos de tabla.
-   */
-  private function loadMenus($startTabla, $endTabla)
-  {
-    $menus = $this->whereBetween('tabla', [$startTabla, $endTabla])
-      ->orderBy('tabla', 'asc')
-      ->orderBy('tabla_id', 'asc')
-      ->where('is_active', true)
-      ->select('tabla', 'tabla_id as id', 'valores')
-      ->get();
-
-    // Organiza los menús por tabla e ID
-    foreach ($menus as $menu) {
-      $tabla = $menu->tabla;
-      $menuData = $menu->valores;
-      $menuData['id'] = $menu->id;
-
-      if (!isset(self::$st_menus[$tabla])) {
-        self::$st_menus[$tabla] = [];
-      }
-
-      // Agrega el submenú si es un hijo
-      if (isset($menuData['parent_id']) && $menuData['parent_id'] > 0) {
-        $parentId = $menuData['parent_id'];
-        self::$st_menus[$tabla][$parentId]['submenu'][$menu->id] = $menuData;
-      } else {
-        // Menú principal
-        self::$st_menus[$tabla][$menu->id] = $menuData;
-      }
-    }
-
-    // Filtra y organiza los submenús
-    foreach (self::$st_menus as $tablaKey => $menuGroup) {
-      foreach ($menuGroup as $menuId => $menuData) {
-        if (isset($menuData['submenu'])) {
-          self::$st_menus[$tablaKey][$menuId]['submenu'] = array_values($menuData['submenu']);
+    /**
+     * Obtiene el menú de una tabla específica.
+     *
+     * @param int|null $tabla
+     * @return array
+     */
+    public function getMenu($tabla = null): array
+    {
+        // Retornar desde el caché local si ya fue cargado
+        if (isset($this->menus[$tabla])) {
+            return $this->menus[$tabla];
         }
-      }
+
+        // Cargar los menús si no están en caché
+        $this->loadMenus($tabla);
+
+        // Retornar el menú específico o un arreglo vacío si no existe
+        return $this->menus[$tabla] ?? [];
     }
-  }
 
-  // Accesor y mutador
-  public function getValoresAttribute($value)
-  {
-    return json_decode($value, true);
-  }
+    /**
+     * Carga todos los menús para una tabla específica.
+     *
+     * @param int|null $tabla
+     */
+    private function loadMenus($tabla = null): void
+    {
+        // Inicializar el arreglo de menús
+        $this->menus = [];
 
-  public function setValoresAttribute($value)
-  {
-    $this->attributes['valores'] = json_encode($value);
-  }
+        // Consulta los datos de la tabla
+        $results = $this->where('tabla', $tabla)
+            ->where('is_active', true)
+            ->orderBy('tabla', 'asc')
+            ->orderBy('tabla_id', 'asc')
+            ->select('tabla', 'tabla_id as id', 'valores')
+            ->get();
+
+        // Organizar los resultados en la estructura deseada
+        foreach ($results as $menu) {
+            $tablaKey = $menu->tabla;
+            $menuData = $menu->valores;
+            $menuData['id'] = $menu->id;
+
+            // Crear la entrada para la tabla si no existe
+            if (!isset($this->menus[$tablaKey])) {
+                $this->menus[$tablaKey] = [];
+            }
+
+            // Agregar submenú si tiene un padre
+            if (!empty($menuData['parent_id'])) {
+                $parentId = $menuData['parent_id'];
+
+                // Asegurar la existencia de la estructura de submenús
+                if (!isset($this->menus[$tablaKey][$parentId]['submenu'])) {
+                    $this->menus[$tablaKey][$parentId]['submenu'] = [];
+                }
+
+                $this->menus[$tablaKey][$parentId]['submenu'][] = $menuData;
+            } else {
+                // Agregar como menú principal
+                $this->menus[$tablaKey][$menu->id] = $menuData;
+            }
+        }
+
+        // Limpiar los submenús y asegurarse de que sean arreglos numerados
+        foreach ($this->menus as $tablaKey => $menuGroup) {
+            foreach ($menuGroup as $menuId => $menuData) {
+                if (isset($menuData['submenu'])) {
+                    $this->menus[$tablaKey][$menuId]['submenu'] = array_values($menuData['submenu']);
+                }
+            }
+        }
+    }
+
+    /**
+     * Accesor para la columna 'valores'.
+     *
+     * @param mixed $value
+     * @return array
+     */
+    public function getValoresAttribute($value): array
+    {
+        return json_decode($value, true) ?? [];
+    }
+
+    /**
+     * Mutador para la columna 'valores'.
+     *
+     * @param mixed $value
+     */
+    public function setValoresAttribute($value): void
+    {
+        $this->attributes['valores'] = json_encode($value);
+    }
 }

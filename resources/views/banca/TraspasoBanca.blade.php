@@ -14,9 +14,9 @@
       <form method="POST" action="{{ route('banca.import') }}" enctype="multipart/form-data">
         @csrf
         <x-forms.tw_input type="file" name="archivo[]" id="archivo" multiple required />
-        <x-forms.tw_input type="text" name="marcador" id="marcador" required value="Date\tLibell"
-          label="Marcador de inicio" />
-
+        <x-forms.tw_input type="text" name="marcador1" id="marcador1" required value="Date" label="Marcador 1" />
+        {{--
+        <x-forms.tw_input type="text" name="marcador2" id="marcador2" required value="Libell" label="Marcador 2" /> --}}
         <button type="submit" id="btn-importar" class="bg-green-500 text-white py-2 px-4 rounded w-full mt-4"
           wire:loading.attr="disabled">
           <span wire:loading.remove>Importar Archivos</span>
@@ -52,11 +52,6 @@
   <!-- Aquí muestra la grilla de datos -->
   @if ($data)
   {{-- @dd($data) --}}
-  @livewire('tables.live-tabla', [
-  'data' => $data, // Pasamos todos los datos (sin paginación)
-  'encabezado' => 'Datos Transferidos',
-  'titulos' => $titulos,
-  'campos' => $campos
-  ])
+  @livewire('tables.table-traspasos')
   @endif
 </x-app-layout>

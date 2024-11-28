@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Livewire\Pages\Contacto;
+use App\Livewire\PostList;
 use App\Livewire\Pruebas;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +25,8 @@ Route::group(['prefix' => 'banca'], function () {
     Route::post('/traspasos/duplicados', [TraspasoBancaController::class, 'eliminarRegistrosDuplicados'])->name('banca.eliminar.duplicados');
     Route::post('/traspasos/movimientos', [TraspasoBancaController::class, 'crearMovimientos'])->name('banca.crearMovimientos');
 });
+
+
 Route::controller(HomeController::class)->group(function () {
   Route::get('/', 'welcome')->name('inicio'); // Blade
   Route::get('/acercade', 'acercaDe')->name('acercade'); // Blade
@@ -38,32 +41,28 @@ Route::get('/pruebas', Pruebas::class)->name('pruebas');
 Route::get('/blog', Pruebas::class)->name('blog');
 Route::get('/portfolio', Pruebas::class)->name('portfolio');
 
+Route::get('posts', PostList::class)->name('posts');
+Route::get('calendar', PostList::class)->name('calendar');
+Route::get('projects', PostList::class)->name('projects');
+Route::get('projects/edit', PostList::class)->name('projects.edit');
+Route::get('projects/update', PostList::class)->name('projects.update');
 
-// Route::get('/', function () {
-//     return view('welcome');
-// })->name('inicio');
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::group(['prefix' => 'dashboard'], function () {
-  Route::get('/',  [DashboardController::class, 'index'])->name('dashboard.index');
-})->middleware(['auth', 'verified']);
-
-Route::middleware(['auth'])->group(function () {
-  Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-  Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-  Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/user/index', [ProfileController::class, 'destroy'])->name('users.index');
+    Route::get('/roles/index', [ProfileController::class, 'destroy'])->name('roles.index');
+    Route::get('/roles/create', [ProfileController::class, 'destroy'])->name('roles.create');
+    Route::get('/roles/edit', [ProfileController::class, 'destroy'])->name('roles.edit');
+    Route::get('/permisos/index', [ProfileController::class, 'destroy'])->name('permisos.index');
+    Route::get('/permisos/create', [ProfileController::class, 'destroy'])->name('permisos.create');
+    Route::get('/permisos/edit', [ProfileController::class, 'destroy'])->name('permisos.edit');
+    Route::get('user/permis/index', [ProfileController::class, 'destroy'])->name('user.permis.index');
 });
-// 
-// para cargar DESDE menu y submenu
-// Route::controller(ProfileController::class)->group(function () {
-//   Route::get('/profile', 'index')->name('profile'); // Ruta principal de perfil
-//   Route::get('/profile/edit', 'edit')->name('profile.edit'); // Ruta para editar el perfil
-//   Route::patch('/profile/update', 'update')->name('profile.update'); // Ruta para actualizar el perfil
-//   Route::delete('/profile/destroy', 'destroy')->name('profile.destroy'); // Ruta para eliminar el perfil
-//   Route::get('/profile/password', 'edit')->name('profile.password'); // Ruta para cambiar contraseña
-//   Route::get('/profile/privacy', 'edit')->name('profile.privacy'); // Ruta para cambiar privacidad
-// });
 
-
-require __DIR__ . '/auth.php';
-// Include the routes from the trabajos.php file
-// include __DIR__ . '/trabajos.php'; 
+require __DIR__.'/auth.php';

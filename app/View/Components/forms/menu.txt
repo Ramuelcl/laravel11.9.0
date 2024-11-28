@@ -1,0 +1,61 @@
+<?php
+
+namespace App\View\Components\forms;
+
+use Closure;
+use Illuminate\Contracts\View\View;
+use Illuminate\View\Component;
+
+class tw_menus extends Component
+{
+  public $menus, $submenus;
+    /**
+     * Create a new component instance.
+     */
+    public function __construct($menu)
+    {
+        $this->menus = [
+'Dashboard' => ['id' => 1, 'route' => 'dashboard', 'icon' => '', 'active' => request()->routeIs('dashboard')],
+'Calendar' => ['id' => 2, 'route' => 'portfolio', 'icon' => '', 'active' => request()->routeIs('portfolio'), 'disabled'
+=> true],
+'Proyectos' => ['id' => 3, 'route' => 'profile', 'icon' => '', 'submenu' => true, 'active' =>
+request()->routeIs('profile*')],
+];
+
+$this->submenus = [
+'Edit' => ['id' => 3, 'route' => 'profile.edit', 'icon' => '', 'active' => request()->routeIs('profile.edit')],
+'Update' => ['id' => 3, 'route' => 'profile.update', 'icon' => '', 'method' => 'PATCH', 'active' =>
+request()->routeIs('profile.update')],
+'More Options' => [
+'id' => 3, 'icon' => '', 'submenu' => [
+'Change Password' => ['route' => 'profile.password', 'icon' => '', 'active' => request()->routeIs('profile.password'),
+'disabled' => true],
+'Privacy Settings' => ['route' => 'profile.privacy', 'icon' => '', 'active' => request()->routeIs('profile.privacy')]
+]
+],
+];
+    }
+
+    /**
+     * Get the view / contents that represent the component.
+     */
+    public function render(): View|Closure|string
+    {
+        return view('components.forms.tw_menus', 
+        compact($this->menus)
+      );
+    }
+}
+y la vista: 
+<div>
+  @foreach ($menus as $title => $menu)
+  <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
+  <x-nav-link :href="route($menu['route'])" :active="$menu['active']" class="flex items-center">
+    @isset($menu['icon'])
+    <x-forms.tw_icons name="{{ $menu['icon'] }}" :error="false" />
+    @endisset
+    {{ __($title) }}
+  </x-nav-link>
+  @endforeach
+</div>
+puedes arreglar este componente para que carge un arreglo y luego despliegue el menu

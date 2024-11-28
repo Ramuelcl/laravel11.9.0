@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Log;
-
+ 
 class TraspasoBancaController extends Controller
 {    
   public $totalPendientes;
@@ -54,24 +54,26 @@ class TraspasoBancaController extends Controller
       $request->validate([
         'archivo' => 'required|array',
         'archivo.*' => 'file|mimes:csv,txt,tsv|max:2048',
-        'marcador' => 'required|string',
+        'marcador1' => 'required|string',
+        // 'marcador2' => 'string',
       ]);
+      
       // Reiniciar índice si la tabla está vacía
       $this->resetAutoIncrementIfTableEmpty('traspasosBanca');
       
-      $marcador = $request->input('marcador'); // Captura el marcador
+      $marcador1 = $request->input('marcador1'); // Captura el marcador1
+      // $marcador2 = $request->input('marcador2'); // Captura el marcador2
       
       foreach ($request->file('archivo') as $archivo) {
-        $this->processFile($archivo, $marcador);
+        $this->processFile($archivo, $marcador1);//,$marcador2
       }
-      $this->crearMovimientos();
-      dump('paso 1');
+      // dump('paso 1');
       return redirect()->back()->with('success', 'Archivos importados correctamente.');
     }
 
     public function crearMovimientos()
     {
-      dd('paso 2');
+      // dd('paso 2');
 
       $traspasos = Traspaso::whereNull('idArchMov')->get();
       // dd(count($traspasos));
@@ -102,6 +104,7 @@ class TraspasoBancaController extends Controller
           'dateMouvement' => $formattedDate,
           'libelle' => $traspaso->libelle,
           'montant' => $decimal,
+          'francs' => 0,
           'estado' => 1,
         ]);
         $movimiento->save();
@@ -116,43 +119,73 @@ class TraspasoBancaController extends Controller
       return redirect()->back();
     }
 
-  private function processFile($archivo, $marcador)
-  {
+private function processFile($archivo, $marcador1)//, $marcador2
+{
     $nombre = $archivo->getClientOriginalName();
     $ext = $archivo->getClientOriginalExtension();
     $delimitador = $ext === 'csv' ? ',' : ($ext === 'tsv' ? "\t" : ';');
-  
+
+    // Abrir el archivo para lectura
     $file = fopen($archivo, 'r');
+    if (!$file) {
+        Log::error("No se pudo abrir el archivo: $nombre");
+        return redirect()->back()->withErrors(['archivo' => "No se pudo abrir el archivo: $nombre"]);
+    }
+
     $leerDatos = false;
 
+    // Procesar cada línea del archivo
     while (($line = fgetcsv($file, 0, $delimitador)) !== false) {
-        $lineaTexto = implode($delimitador, $line);
 
-        if (!$leerDatos && str_contains($lineaTexto, $marcador)) {
-            $leerDatos = true;
+      // Convertir la línea a texto para buscar el marcador1
+        $lineaTexto = implode($delimitador, $line);
+        // Comienza a leer datos después del marcador1
+        if (!$leerDatos && str_contains($lineaTexto, $marcador1)) {
+          $leerDatos = true;
+          continue; // Salta la línea del marcador1
+        }
+        // dump($line);
+        // dump(['leyendo archivo'=>$lineaTexto, 'leerDatos'=>$leerDatos,'contieneMarcador'=>str_contains($lineaTexto, $marcador1)]);
+        // Si aún no hemos encontrado el marcador1, continúa al siguiente ciclo
+        if (!$leerDatos) {
+          continue;
+        }
+
+        // Validar la estructura de la línea
+        if (count($line) < 3) { // Asegúrate de tener al menos tres columnas
+            Log::warning("Línea mal formateada en el archivo $nombre: " . implode($delimitador, $line));
             continue;
         }
 
-        if ($leerDatos) {
-            // Limpieza de caracteres no válidos
+        try {
+            // Procesar el campo "Libelle" para asegurarnos de que sea válido
             $libelle = $line[1];
             if (!mb_check_encoding($libelle, 'UTF-8')) {
-                $libelle = mb_convert_encoding($libelle, 'UTF-8', 'ISO-8859-1');
+                $libelle = utf8_encode($libelle); // Convertir a UTF-8
             }
-            $libelle = preg_replace('/[^\x20-\x7E]/', '', $libelle);
+            $libelle = preg_replace('/[^\x20-\x7E]/', '', $libelle); // Remover caracteres no válidos
 
+            // Crear o actualizar registros en la tabla `traspasos`
             Traspaso::updateOrCreate(
-                ['Date' => $line[0], 
-                'Libelle' => $libelle, 
-                'MontantEUROS' => $line[2]],
-                ['NomArchTras' => $nombre]
+                [
+                    'Date' => $line[0], // Fecha
+                    'Libelle' => $libelle, // Descripción
+                    'MontantEUROS' => $line[2], // Monto en euros
+                    'MontantFRANCS' => $line[3] ?? 0, // Monto en euros
+                ],
+                [
+                    'NomArchTras' => $nombre // Nombre del archivo
+                ]
             );
+        } catch (\Exception $e) {
+            Log::error("Error al procesar la línea en el archivo $nombre: " . $e->getMessage());
+            continue; // Continuar con la siguiente línea si ocurre un error
         }
-    }
+      }
+      fclose($file); // Cerrar el archivo al terminar
+      // dd('stop');
+}
 
-    fclose($file);
-    }
-    
     public function removeDuplicates()
     {
         $duplicates = $this->findDuplicates();

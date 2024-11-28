@@ -20,7 +20,7 @@ class TraspasoBancaImport
     {
         // Leer y procesar el archivo
         $rows = $this->parseFile($file);
-
+dd($rows);
         foreach ($rows as $row) {
             try {
                 // Crear un modelo y asignar valores
