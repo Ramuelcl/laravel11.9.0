@@ -71,7 +71,7 @@ $menus = $m->getMenu($tabla);
         class="bg-lightBg dark:bg-darkBg absolute left-full top-0 mt-0 w-full origin-top-right rounded-md shadow-lg px-2 py-2 md:w-48 z-50">
         @foreach ($item['submenu'] as $subSubId => $subSubmenu)
         @isset($item['route']))
-        <x-nav-link :href="route($subSubmenu['route'])" :active="request()->routeIs($subSubmenu['route'])"
+        <x-nav-link wire:navigate :href="route($subSubmenu['route'])" :active="request()->routeIs($subSubmenu['route'])"
           class="w-full text-left px-4 py-2 text-sm rounded-md {{ isset($subSubmenu['disabled']) && $subSubmenu['disabled'] ? 'opacity-50 cursor-not-allowed' : '' }}">
           @isset($subSubmenu['icon'])
           <x-forms.tw_icons name="{{ $subSubmenu['icon'] }}" :error="false" />
@@ -94,7 +94,7 @@ $menus = $m->getMenu($tabla);
       </button>
     </form>
     @else
-    <x-nav-link :href="route($item['route'])" :active="request()->routeIs($item['route'])"
+    <x-nav-link wire:navigate :href="route($item['route'])" :active="request()->routeIs($item['route'])"
       class="w-full text-left px-4 py-2 text-sm rounded-md">
       @isset($item['icon'])
       <x-forms.tw_icons name="{{ $item['icon'] }}" :error="false" />

@@ -13,6 +13,7 @@
   <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
   <!-- Scripts -->
+  @livewireStyles
   @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -31,16 +32,18 @@
 
     <!-- Page Content -->
     <main>
-      <x-tables.tw_ventana title="Clientes">
-        @livewire('travail.clientes')
-        </x-tabla.tw_ventana>
-        {{ $slot ?? null}}
+      <div x-data="{ show: false }">
+        <x-forms.tw_button color="green" class="m-4" @click="show = !show">Toggle</x-forms.tw_button>
+        <span x-show="show">Hello, World!</span>
+      </div>
+      {{ $slot ?? null}}
     </main>
-    <!-- Page Heading -->
-    @isset($footer)
+    <!-- Page Footer -->
+    {{-- @isset($footer)
     @include('layouts.includes.footer2')
-    @endisset
+    @endisset --}}
   </div>
+  @livewireScriptConfig
 </body>
 
 </html>

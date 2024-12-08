@@ -14,6 +14,7 @@ return new class extends Migration
             $table->id();
             $table->string("nombre", 32)->unique();
             $table->string("slug", 32);
+            $table->boolean("is_active")->default(true);
             $table->unsignedBigInteger('parent_id')->nullable(); // Add this line
             $table->timestamps();
         });

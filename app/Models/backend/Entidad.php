@@ -70,7 +70,7 @@ class Entidad extends Model
     return "{$this->nombres} {$this->apellidos}";
   }
 
-  public static function listaTipos($tipo)
+  public function listaTipos($tipo=11050)
   {
     $datos = Tabla::where('tabla', '=', $tipo)
       ->where('is_active', '=', true)

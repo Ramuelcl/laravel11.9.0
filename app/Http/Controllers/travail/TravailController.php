@@ -11,4 +11,19 @@ class TravailController extends Controller
     {
         return view('livewire.travail.clientes');
     }
+
+    public function crear()
+    {
+        return view('livewire.travail.clientes-form');
+    }
+
+    public function editar()
+    {
+        return view('livewire.travail.clientes-form');
+    }
+
+    public function eliminar()
+    {
+        return view('livewire.travail.clientes-form');
+    }
 }

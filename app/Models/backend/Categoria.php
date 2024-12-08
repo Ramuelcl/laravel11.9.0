@@ -26,4 +26,14 @@ class Categoria extends Model
     {
         return Str::slug($this->nombre); // Generate the slug
     }
+
+  public function scopeActive($query)
+  {
+      return $query->where('is_active', 1);
+  }
+
+  public static function getActiveCategories()
+  {
+      return self::active()->pluck('nombre', 'id');
+  }
 }

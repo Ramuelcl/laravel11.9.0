@@ -18,6 +18,16 @@ use Illuminate\Support\Facades\Route;
 
 //   return view('test'); // Aquí usamos una vista de prueba
 // });
+
+// Sistema Travail
+Route::middleware('auth')
+    ->prefix('travail')
+    ->controller(Clientes::class)
+    ->group(function () {
+        Route::get('/clientes', Clientes::class)->name('travail.clientes');
+        Route::post('/clientes', Clientes::class)->name('travail.clientes');
+    });
+
   // sistema BANCA
   Route::group(['prefix' => 'banca'], function () {
       Route::get('/traspasos', [TraspasoBancaController::class, 'showTable'])->name('banca.showTable');
@@ -26,15 +36,6 @@ use Illuminate\Support\Facades\Route;
       Route::post('/traspasos/duplicados', [TraspasoBancaController::class, 'eliminarRegistrosDuplicados'])->name('banca.eliminar.duplicados');
       Route::post('/traspasos/movimientos', [TraspasoBancaController::class, 'crearMovimientos'])->name('banca.crearMovimientos');
   });
-
-// Sistema Travail
-Route::middleware('auth')
-    ->prefix('travail')
-    ->controller(Clientes::class)
-    ->group(function () {
-        Route::get('/clientes', 'clientes')->name('travail.clientes');
-    });
-
 
 Route::controller(HomeController::class)->group(function () {
   Route::get('/', 'welcome')->name('inicio'); // Blade

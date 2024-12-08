@@ -1,4 +1,4 @@
-<div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden border">
+<div class="max-w-4xl mx-auto mt-4 bg-lightBg dark:bg-darkBg shadow-lg rounded-lg overflow-hidden border">
   <!-- Cabecera fija -->
   <div class="px-4 py-2 bg-gray-200 dark:bg-gray-700">
     <h2 class="text-lg font-semibold text-gray-900 dark:text-white text-center">
@@ -7,7 +7,7 @@
   </div>
 
   <!-- Contenido principal -->
-  <div class="p-4" style="height: 300px; overflow-y: auto;">
+  <div class="p-4" style="overflow-y: auto;">
     <!-- Aquí va el contenido pasado como slot -->
     {{ $slot }}
   </div>

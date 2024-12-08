@@ -49,4 +49,21 @@ class Marcador extends Model
 
     return $query;
   }
+
+  
+  public function scopeActive($query)
+  {
+      return $query->where('is_active', 1);
+  }
+
+  public static function getActiveMarcadores()
+  {
+      return self::active()->pluck('nombre', 'id');
+  }
+
+  public static function getActiveColores()
+  {
+      return self::active()->pluck('hexa', 'id');
+  }
+
 }
