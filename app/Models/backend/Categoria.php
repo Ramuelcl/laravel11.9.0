@@ -2,10 +2,10 @@
 
 namespace App\Models\backend;
 
+use App\Models\backend\Entidad;
+// use App\Models\backend\Categorizable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-// use App\Models\backend\Categorizable;
-use App\Models\post\Post;
 use Illuminate\Support\Str; // Import the Str class
 
 class Categoria extends Model
@@ -15,10 +15,10 @@ class Categoria extends Model
     protected $fillable = ["nombre"];
     protected $hidden = ["slug"];
 
-    public function posts()
+    public function entidades()
     {
-        return $this->belongsTo(Post::class);
-        // return $this->morphedByMany(Post::class, 'categorizable');
+        return $this->hasMany(Entidad::class);
+        // return $this->morphedByMany(Entidad::class, 'categoriable');
     }
 
     // Accessor for the slug attribute

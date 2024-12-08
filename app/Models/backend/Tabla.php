@@ -120,4 +120,45 @@ class Tabla extends Model
     {
         $this->attributes['valores'] = json_encode($value);
     }
+
+  public function qTablas($table, $excluirUltimo = true, $campos = ['tabla_id', 'valores']) // nunca excluye el ultimo campo=99
+  {
+    // Obtén los registros filtrados por los campos solicitados
+    $registros = Tabla::where('tabla', $table)
+      ->where('is_active', true)
+      ->select($campos)
+      ->get()->toArray();
+    // Inicializa el arreglo de resultados
+    // dd($registros);
+    $resultados = [];
+    if ($excluirUltimo)
+      $paso =  array_pop($registros);
+    // dd($registros);
+    // Verifica si se encontraron registros)
+    if (!empty($registros)) {
+      // Procesa cada registro
+      $item = [];
+      foreach ($registros as $registro) {
+        $tabla_id = null;
+        // Itera sobre $registro ya que es siempre un array
+        foreach ($registro as $ind => $valor) {
+          // dump($ind, $valor);
+          if ($ind == 'valores') {
+            foreach ($valor as $key => $value) {
+              $item[$tabla_id] = $value;
+            }
+          } else {
+            // 'tabla_id' debe mantener su indice original
+            $tabla_id = $valor;
+          }
+        }
+
+        // Agrega el registro procesado al arreglo de resultados
+      }
+      $resultados = $item;
+    }
+
+    // Retorna el arreglo con el formato solicitado
+    return $resultados;
+  }
 }

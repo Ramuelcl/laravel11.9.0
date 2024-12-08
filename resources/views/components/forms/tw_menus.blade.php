@@ -13,7 +13,8 @@ $menus = $m->getMenu($tabla);
     {{-- @dd($menu); --}}
     @if (!isset($menu['disabled']) || !$menu['disabled'])
     @isset($menu['route'])
-    <x-nav-link :href="route($menu['route'])" :active="request()->routeIs($menu['route'])" class="flex items-center">
+    <x-nav-link wire:navigate :href="route($menu['route'])" :active="request()->routeIs($menu['route'])"
+      class="flex items-center">
       @isset($menu['icon'])
       <x-forms.tw_icons name="{{ $menu['icon'] }}" :error="false" />
       @endisset

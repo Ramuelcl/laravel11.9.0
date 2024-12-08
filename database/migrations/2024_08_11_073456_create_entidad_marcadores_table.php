@@ -6,18 +6,16 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    public $table = 'entidad_marcadores';
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('posts', function (Blueprint $table) {
+        Schema::create($this->table, function (Blueprint $table) {
             $table->id();
-            $table->string('title')->nullable();
-            $table->text('content')->nullable();
-            $table->string('featured_image')->nullable();
-            $table->string('slug')->nullable();
-            $table->string('user')->nullable();
+            $table->foreignId("entidad_id")->constraided()->onDelete("cascade");
+            $table->foreignId("marcador_id")->constraided()->onDelete("cascade");
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('posts');
+        Schema::dropIfExists($this->table);
     }
 };

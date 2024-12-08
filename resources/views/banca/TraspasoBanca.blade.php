@@ -35,7 +35,9 @@
         </p>
       </div>
 
-      <form action="{{ route('banca.crearMovimientos') }}" class="w-full">
+      <form method="POST" action="{{ route('banca.crearMovimientos') }}" class="w-full">
+        @csrf
+        <!-- Token CSRF necesario para solicitudes POST -->
         <button type="submit" id="btn-pasar-movimientos" class="bg-yellow-500 text-white py-2 px-4 rounded w-full"
           wire:loading.attr="disabled">
           <span wire:loading.remove>Pasar a Movimientos</span>
@@ -50,8 +52,8 @@
     </div>
   </div>
   <!-- Aquí muestra la grilla de datos -->
-  @if ($data)
+  {{-- @if ($data) --}}
   {{-- @dd($data) --}}
-  @livewire('tables.table-traspasos')
-  @endif
+  @livewire('tables.table-live', [ 'fields'=>$fields, 'filters'])
+  {{-- @endif --}}
 </x-app-layout>

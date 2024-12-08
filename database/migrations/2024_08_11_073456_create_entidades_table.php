@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\backend\Marcador;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -30,7 +32,10 @@ return new class extends Migration
       $table->string('apellidos')->nullable()->default(null);
       $table->boolean('is_active')->default(true);
       $table->date('aniversario')->nullable()->default(null);
-      $table->tinyInteger('sexo')->nullable()->default(1); // ['masculino', 'femenino', 'otro']
+      $table->tinyInteger('sexo')->nullable()->default(null); // ['masculino', 'femenino', 'otro']
+      $table->foreignId('categoria_id')->nullable()->default(null)
+        ->constrained('categorias')->onDelete('cascade')->onUpdate('cascade');
+      $table->string('image_path')->nullable()->default('null');
       $table->timestamps();
     });
 
@@ -96,7 +101,6 @@ return new class extends Migration
    */
   public function down(): void
   {
-
     Schema::dropIfExists($this->tableDirecciones);
     Schema::dropIfExists($this->tablePostales);
     Schema::dropIfExists($this->tableCiudades);
@@ -104,5 +108,13 @@ return new class extends Migration
     Schema::dropIfExists($this->tableTelefonos);
     Schema::dropIfExists($this->tableEmails);
     Schema::dropIfExists($this->table);
+  }
+
+  /**
+   * Get all of the marcadores/tags for the Entidad.
+   */
+  public function marcadores(): MorphToMany
+  {
+      return $this->MorphToMany(Marcador::class, 'taggable');
   }
 };

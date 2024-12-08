@@ -6,10 +6,10 @@ namespace App\Models\backend;
 use App\Models\backend\Direccion;
 use App\Models\backend\Email;
 use App\Models\backend\Telefono;
-use App\Models\Scopes\EntidadScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class Entidad extends Model
 {
@@ -30,6 +30,7 @@ class Entidad extends Model
     'is_active',
     'aniversario',
     'sexo',
+    'image_path'
   ];
 
   protected $casts = [
@@ -43,6 +44,8 @@ class Entidad extends Model
     'is_active' => 'boolean',
     'aniversario' => 'date',
     'sexo' => 'integer',
+    'categoria_id' => 'integer',
+    'image_path' => 'string',
   ];
 
   // Relaciones
@@ -80,9 +83,19 @@ class Entidad extends Model
     return $datos;
   }
 
-
-  protected static function booted()
+  /**
+   * get Categoria for Entidad
+   */
+  public function xCategoria()
   {
-    // static::addGlobalScope(new EntidadScope());
+    return $this->belongsTo(Categoria::class);
+  }
+
+  /**
+  * Get all of the Marcador for the Entidad.
+  */
+  public function xMarcadores(): MorphToMany
+  {
+      return $this->morphToMany(Marcador::class, 'marcable');
   }
 }

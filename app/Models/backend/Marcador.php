@@ -2,9 +2,7 @@
 
 namespace App\Models\backend;
 
-use App\Models\imagen\Imagen;
-use App\Models\post\Post;
-use App\Models\video\Video;
+use App\Models\backend\Entidad;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -24,8 +22,8 @@ class Marcador extends Model
    */
   protected $guarded = [];
 
-  protected $fillable = ["nombre"];
-  protected $hidden = ["slug"];
+  protected $fillable = ["nombre", "babosa","hexa", "rgb", "metadata", "is_active",];
+  protected $hidden = ["babosa", "rgb", "metadata"];
 
   // Accessor for the slug attribute
   public function getSlugAttribute()
@@ -38,23 +36,17 @@ class Marcador extends Model
     'is_active' => 'boolean',
   ];
 
-  public function xPosts(): MorphToMany
+  /**
+   * Get all of the Entidad that are assigned this Marcador.
+   */
+  public function entidades($active = null): MorphToMany
   {
-    return $this->morphedByMany(Post::class, 'marcadorable');
+    $query = $this->morphedByMany(Entidad::class, 'marcable');//marcadorable
+
+    if (!is_null($active)) {
+      $query->where('is_active', $active);
+    }
+
+    return $query;
   }
-
-  // public function xVideos(): MorphToMany
-  // {
-  //   return $this->morphedByMany(Video::class, 'marcadorable');
-  // }
-
-  // public function xImagens(): MorphToMany
-  // {
-  //   return $this->morphedByMany(Imagen::class, 'marcadorable');
-  // }
-
-  // public function xMovimientos(): MorphToMany
-  // {
-  //   return $this->morphedByMany(\App\Models\banca\Movimiento::class, 'marcadorable');
-  // }
 }

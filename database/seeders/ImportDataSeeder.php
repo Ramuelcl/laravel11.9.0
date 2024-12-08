@@ -10,8 +10,11 @@ use App\Models\Backend\Email;
 use App\Models\Backend\Entidad;
 use App\Models\backend\Pais;
 use App\Models\Backend\Telefono;
+use function PHPUnit\Framework\isNull;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+
+use Illuminate\Support\Str;
 
 class ImportDataSeeder extends Seeder
 {
@@ -56,6 +59,51 @@ class ImportDataSeeder extends Seeder
         'aniversario' => null,
         'created_at' => $this->parseDate($record->created_at),
       ]);
+      $pais_id = $this->fncCreaPais('France');
+      
+      if(!is_null($record->direccion)) {
+        $campo = $record->direccion;
+        $parts = explode(' ', $campo);
+        // dump($parts);
+        if (sizeof($parts) > 1) {
+          // Get the last part, which is likely the number
+          $numero = trim(array_shift($parts));
+          $calle = trim(implode(' ', $parts)); // Combine all parts except the last one
+        } else {
+          $numero = null;
+          $calle = null;
+        }
+        $ciudad_id = $this->fncCreaCiudad($record->ciudad, $pais_id);
+        $cp_id = $this->fncCreaCP($record->cp, $ciudad_id);
+        Direccion::factory()->create([
+          'entidad_id' => $entidad->id,
+          'numero' => $numero,
+          'calle' => $calle,
+          'tipo' => 1,
+          'cp_id' => $cp_id ?? 0,
+        ]);
+      }
+      if(!is_null($record->eMail)) {
+        Email::factory()->create([
+          'entidad_id' => $entidad->id,
+          'mail' => $record->eMail,
+          'tipo' => 1,
+        ]);
+      }
+      if(!is_null($record->telefono1)) {
+        Telefono::factory()->create([
+          'entidad_id' => $entidad->id,
+          'numero' => $record->telefono1,
+          'tipo' => 1,
+        ]);
+      }
+      if(!is_null($record->telefono2)) {
+        Telefono::factory()->create([
+          'entidad_id' => $entidad->id,
+          'numero' => $record->telefono2,
+          'tipo' => 2,
+        ]);
+      }
     }
     // Obtén todos los registros de la tabla import
     $records = DB::connection('origen1') // usa el nombre de tu conexión de origen
@@ -95,13 +143,14 @@ class ImportDataSeeder extends Seeder
           }
           // dd($numero, $calle);
           // Crea direcciones
-          Direccion::factory()->create([
-            'entidad_id' => $entidad->id,
-            'calle' => $calle,
-            'numero' => $numero,
-            'tipo' => $this->mapAddressType($record->{"Address $i - Type"}),
-            'cp_id' => $cp_id ?? 0,
-          ]);
+          if(!is_null($calle))
+            Direccion::factory()->create([
+              'entidad_id' => $entidad->id,
+              'calle' => $calle,
+              'numero' => $numero,
+              'tipo' => $this->mapAddressType($record->{"Address $i - Type"}),
+              'cp_id' => $cp_id ?? 0,
+            ]);
         }
       }
 
@@ -219,8 +268,9 @@ class ImportDataSeeder extends Seeder
     return $nuevo_cp->id;
   }
 
-  protected function fncCreaCiudad($nombreCiudad, $pais_id)
+  protected function fncCreaCiudad($nombreCiudad=null, $pais_id)
   {
+    if(is_null($nombreCiudad)) return null;
     // Busca si la ciudad ya existe
     $ciudad_existe = Ciudad::where('nombre', $nombreCiudad)->first();
 
@@ -239,10 +289,10 @@ class ImportDataSeeder extends Seeder
     return $nueva_ciudad->id;
   }
 
-  protected function fncCreaPais($nombrePais)
-  {
-    $nombrePais = $nombrePais == 'Chile' || $nombrePais == 'Chili' ?? 'Chile';
-    $nombrePais = trim($nombrePais) ? $nombrePais : "France";
+  protected function fncCreaPais($nombrePais){
+    $nombrePais = Str::upper($nombrePais);
+    $nombrePais = substr($nombrePais, 0, 4) == 'CHIL' ? 'CHILE' : $nombrePais;
+    $nombrePais = trim($nombrePais) ? $nombrePais : "FRANCE";
 
     // Busca si pais ya existe
     $pais_existe = Pais::where('nombre', $nombrePais)->first();

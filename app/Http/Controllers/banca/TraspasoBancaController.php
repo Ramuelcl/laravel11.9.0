@@ -1,16 +1,18 @@
 <?php
+// app/http/controllers/banca/traspaso-banca-controller.php
 
 namespace App\Http\Controllers\banca;
 
 use App\Http\Controllers\Controller;
+use App\Models\backend\Entidad;
 use App\Models\banca\Movimiento;
 use App\Models\banca\Traspaso;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
+use Livewire\Livewire;
 use Log;
- 
 class TraspasoBancaController extends Controller
 {    
   public $totalPendientes;
@@ -24,8 +26,101 @@ class TraspasoBancaController extends Controller
     return $this->totalPendientes--;
   }
 
-    public function showImportForm()
+  public function showImportForm()
+  { 
+    // $datas = Entidad::where('tipoEntidad','=','2')->paginate(10);
+    // dd($datas);
+    $fields = [
+      'id'=>[
+        'title'=>'Id',
+        'type'=>'integer',
+        'decimal'=>0,
+        'list'=>true,
+      ],
+      'tipoEntidad'=>[
+        'title'=>'Tipo',
+        'type'=>'integer',
+        'decimal'=>0,
+        'options'=>[], // cuando es un comboBox o listBox
+        'required'=>true,
+        'form'=>true,
+        'list'=>true,
+      ],
+      'razonSocial'=>[
+        'title'=>'Razón Social',
+        'type'=>'string',
+        'decimal'=>null,
+        'options'=>[], // cuando es un comboBox o listBox
+        'required'=>true,
+        'form'=>false,
+        'list'=>false,
+      ],
+      'website'=>[
+        'title'=>'Website',
+        'type'=>'string',
+        'decimal'=>null,
+        'options'=>[], // cuando es un comboBox o listBox
+        'required'=>true,
+        'form'=>false,
+        'list'=>false,
+      ],
+      'titulo'=>[
+        'title'=>'Website',
+        'type'=>'string',
+        'required'=>true,
+        'form'=>false,
+        'list'=>false,
+      ],
+      'nombres'=> [
+        'title'=>'Nombres',
+        'type'=>'string',
+        'required'=>true,
+        'form'=>false,
+        'list'=>true,
+      ],
+      'apellidos'=>[
+      'title'=>'Apellidos',
+      'type'=>'string',
+      'required'=>true,
+      'value'=>null,
+      'form'=>false,
+      'list'=>true,
+      ],
+      'is_active' =>[
+        'title'=>'Activo',
+        'type'=>'checkit',
+        'required'=>true,
+        'value'=>true,
+        'form'=>false,
+        'list'=>true,
+      ],
+      'aniversario' =>[
+        'title'=>'Aniversario',
+        'type'=>'date',
+        'required'=>true,
+        'form'=>false,
+        'list'=>true,
+      ],
+      'sexo' =>[
+        'title'=>'Sexo',
+        'type'=>'string',
+        'required'=>true,
+        'form'=>false,
+        'list'=>false,
+      ],
+    ]; 
+
+    $filters = [
+      'tipoEntidad' => 2,  // Filtrar por tipoEntidad
+    ];
+    return view('banca.listaTabla', ['model'=>Entidad::class, 'filters'=>$filters, 'fields'=>$fields, 'perPage'=>10
+      ]);
+  }
+
+    public function showImportForm1()
     {
+
+    // Correspondencia con los campos en la base de datos.
         $data = Traspaso::latest()->get();
         $titulos = [ // Encabezados de la tabla
         'ID', 'Fecha', 'Descripción', 'Euros', 'Francos', 'Archivo', 'ID Movimiento'
@@ -44,6 +139,8 @@ class TraspasoBancaController extends Controller
         'totalDuplicados' => $this->countDuplicates(),
         'totalMovimientos' => Movimiento::count(),
         'totalPendientes' => $this->totalPendientes,
+        'datas'=> $datas,
+        'fields' => $fields,
     ]);
     }
 
@@ -87,7 +184,7 @@ class TraspasoBancaController extends Controller
           // Si necesitas formatearlo para la base de datos (formato Y-m-d)
           $formattedDate = $date->format('Y-m-d');
 
-          echo $formattedDate; // Salida: 2012-12-31
+          // echo $formattedDate; // Salida: 2012-12-31
         } catch (\Exception $e) {
           // Manejo del error si el formato es incorrecto
           echo "Error al convertir la fecha: " . $e->getMessage();
@@ -98,13 +195,13 @@ class TraspasoBancaController extends Controller
         // Convierte a float
         $decimal = floatval($decimalString);
 
-        echo $decimal; // Salida: 1234.56
+        // echo $decimal; // Salida: 1234.56
         // Crear un nuevo registro de movimiento
         $movimiento = new Movimiento([
           'dateMouvement' => $formattedDate,
           'libelle' => $traspaso->libelle,
           'montant' => $decimal,
-          'francs' => 0,
+          'francs' => $decimal,
           'estado' => 1,
         ]);
         $movimiento->save();

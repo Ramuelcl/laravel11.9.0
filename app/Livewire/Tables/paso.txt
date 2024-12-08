@@ -1,0 +1,326 @@
+<?php
+// app/livewire/travail/clientes.php
+
+namespace App\Livewire\Travail;
+
+use App\Models\backend\Entidad;
+use Livewire\Component;
+use Livewire\WithPagination;
+
+class Clientes extends Component
+{
+  use WithPagination;
+  
+  public $model = Entidad::class;
+  public $datas;
+  public $filters = ['tipoEntidad' => '2'];
+  public $perPage = 10; 
+
+  public $open = false; // intercambia entre listado y formulario de alta/baja/edicion
+
+  public $fields = [
+    'tipoEntidad' => [
+      'title'=>'Tipo',
+      'type'=>'string',
+      'default'=>'2',
+      'form'=>[
+        'display' =>false,
+      ],
+      'list'=>[
+        'display' =>false,
+      ],
+    ],
+    'nombres'=> [
+      'title'=>'Nombres',
+      'type'=>'string',
+      'form'=>[
+        'display' =>true,
+        'rules'=>'required|min:3',
+      ],
+      'list'=>[
+        'display' =>true,
+      ],
+    ],
+    'apellidos'=>[
+      'title'=>'Apellidos',
+      'type'=>'string',
+      'form'=>[
+        'display' =>true,
+        'rules'=>'required|min:3',
+      ],
+      'list'=>[
+        'display' =>true,
+      ],
+    ],
+    'is_active'=>[
+      'title'=>'Activo',
+      'type'=>'boolean',
+      'form'=>[
+        'display' =>true,
+        'rules'=>'required|min:3',
+      ],
+      'list'=>[
+        'display' =>true,
+        'options' => ['yes', 'no'],
+      ],
+      ],
+    'aniversario'=>[
+      'title'=>'Aniversario',
+      'type'=>'date',
+      'form'=>[
+        'display' =>true,
+        'rules'=>'required|date:Y-m-d',
+      ],
+      'list'=>[
+        'display' =>true,
+      ],
+    ],
+    'sexo'  =>[
+      'title'=>'Sexo',
+      'type'=>'checkit',
+      'form'=>[
+        'display' =>true,
+        'rules'=>'required',
+      ],
+      'list'=>[
+        'display' =>true,
+        'options' => ['man', 'woman'],
+      ],
+    ],
+  ]; 
+
+  public function mount(){
+    $this->fields = $this->normalizeFields($this->fields);
+    $this->datas = Entidad::all();
+    foreach($this->filters as $key => $filter){
+      $this->datas = $this->datas->where($key, $filter);
+    }
+    // dd($this->datas->toArray());
+    // $this->datas = $this->datas->paginate($this->perPage);
+    }
+
+  public function render()
+  {
+      return view('livewire.travail.clientes', ['datas' => $this->datas]);
+  }
+
+  private function normalizeFields($fields) {
+    $defaults = [
+      'title' => '',
+      'type' => 'string',
+      'default' => null,
+      'form' => [
+        'display' =>false,
+        'rules' =>null,
+      ],
+      'list' => [
+        'display' =>false,
+        'options' => [], 
+      ],
+    ];
+    return collect($fields)
+      ->mapWithKeys(function ($field, $key) use ($defaults) {
+        // Si el campo no es un arreglo, inicializarlo como un arreglo vacío
+        if (!is_array($field)) {
+            $field = [];
+        }
+
+        // Combinar el arreglo con los valores predeterminados
+        $normalizedField = array_merge($defaults, $field);
+
+        return [$key => $normalizedField];
+      })
+      ->toArray();
+    }
+}
+su vista es: 
+{{-- resources/views/livewire/travail/clientes.blade.php --}}
+<div>
+  @if($open === true)
+  @livewire('travail.clientes-form', ['fields' => $fields])
+  @else
+  @livewire('tables.table-live', [$model, 'fields' => $fields])
+  @endif
+</div>
+tablelive debe recibir la tabla a mostrar, es ese mi problema:
+<?php
+// app\Livewire\Tables\LiveTabla.php
+
+namespace App\Livewire\Tables;
+
+use Livewire\Component;
+use Livewire\WithPagination;
+
+class TableLive extends Component
+{
+    use WithPagination;
+
+    public $model;    // Nombre del modelo
+    public $filters;  // Filtros opcionales
+    public $data;
+    public $fields;
+    public $titles;
+    public $perPage;  // Elementos por página
+    
+    // Método para el montaje inicial del componente
+    public function mount($model, $fields, $filters = [], $perPage = 10)
+    {
+        $this->model = $model;       // Nombre del modelo
+        // $this->fields = $this->normalizeFields($fields);
+        $this->filters = $filters;  // Filtros opcionales
+        $this->titles = $this->theTitles($fields);
+        $this->fields = $this->theFields($fields);
+        // dd($this->titles, $this->fields);
+        $this->perPage = $perPage;  // Elementos por página
+    }
+
+    // Método para renderizar la vista
+    public function render() {
+      $query = app($this->model)::query();
+
+      foreach ($this->filters as $column => $value) {
+          if ($value !== null) {
+              $query->where($column, $value);
+          }
+      }
+
+      $paginatedData = $query->paginate($this->perPage);
+      $this->data = $paginatedData->items(); // Asignar solo los datos de la página actual
+      // Inspeccionar los datos generados
+      // dd($paginatedData->toArray());
+
+      return view('livewire.tables.table-live', [
+          'data' => $paginatedData,// Enviar los datos paginados directamente a la vista
+      ]);
+    }
+
+  private function theTitles($fields){
+    return collect($fields)
+      ->filter(fn($field) => $field['list'] ?? false) // Solo campos visibles
+      ->mapWithKeys(fn($field, $key) => [$key => $field['title'] ?? $key])
+      ->toArray();
+  }
+  
+  public function getField($field, $prop){
+    return $this->fields[$field][$prop] ?? null;
+  }
+  private function theFields($fields)
+{
+    $filteredFields = [];
+
+    foreach ($fields as $id => $field) {
+        // Validar que el campo tenga 'list' definido y que su 'display' sea true
+        if (isset($field['list']['display']) && $field['list']['display']) {
+            // Agregar solo las claves relevantes (sin incluir 'form')
+            $filteredFields[$id] = [
+                'title' => $field['title'],
+                'type' => $field['type'],
+                'default' => $field['default'],
+            ];
+        }
+    }
+
+    return $filteredFields;
+}
+
+}
+su vista es:
+{{-- resources/views/livewire/tables/table-live.blade.php --}}
+<div class="my-2">
+  <table class="table">
+    <div class="justify-between">
+      <x-forms.tw_button>+</x-forms.button>
+        <x-forms.tw_button>-</x-forms.button>
+    </div>
+    @if (!empty($titles))
+    <x-table.table-header :titles="$titles" />
+    @else
+    <thead>
+      <tr>
+        <th class="text-center">No hay títulos disponibles</th>
+      </tr>
+    </thead>
+    @endif
+    <tbody>
+      {{-- @dd($data) --}}
+      @forelse ($data as $item)
+      <x-table.table-row :item="$item" :fields="$fields" />
+      @empty
+      <tr>
+        <td colspan="{{ count($titles) }}" class="text-center">No hay datos disponibles</td>
+      </tr>
+      @endforelse
+    </tbody>
+  </table>
+  <div class="border-green-300 py-2 border-y-2">
+    @if(!is_array($data))
+    {{ $data->links() ?? null}}
+    @endif
+  </div>
+</div>
+y los componentes son:
+{{-- resources/views/components/table/table-row.blade.php --}}
+@props(['item'=>null, 'fields'=>null])
+{{-- @dd($item, $fields) --}}
+<tr>
+  @foreach ($fields as $id => $field)
+  @php
+  $list=$this->getField($id, 'list');
+  $type=$this->getField($id, 'type');
+  $dec=$this->getField($id, 'decimal', 0);
+  // dd(['value'=>$value,'display'=>$list, 'type'=>$type,'id'=> $id,'field'=> $field]);
+  @endphp
+  @if($list)
+  @php
+  $value = $item[$id] ?? null; // Accede al valor usando el identificador del campo
+  $value = mb_check_encoding($value, 'UTF-8') ? $value : utf8_encode($value);
+  @endphp
+  <td class="border px-4 py-1 text-gray-900 dark:text-white">
+    @switch($type)
+    @case('integer')
+    @case('decimal')
+    <div class="text-right">
+      {{ number_format($value, $dec, '.', ',') ?? 'N/A'}}
+    </div>
+    @break
+
+    @case('date')
+    <div class="text-center">
+      {{ date('d/m/Y', strtotime($value)) ?? 'N/A'}}
+    </div>
+    @break
+
+    @case('checkit')
+    <div class="text-center">
+      {{ $value ? 'yes' : 'no' }}
+    </div>
+    @break
+
+    @case('image')
+    <div class="text-center w-10 h-10">
+      @if (Storage::disk('public')->exists($value))
+      <img src="{{ asset('storage/' . $value) }}" alt="Foto">
+      @endif
+
+    </div>
+    @break
+
+    @default
+    <div class="text-left">
+      {{ $value ?? 'N/A'}}
+    </div>
+    @endswitch
+  </td>
+  @endif
+  @endforeach
+</tr>
+y también este para mostrar los títulos:
+{{-- resources/views/components/table/table-header.blade.php --}}
+@props(['titles' => ['titulos NO enviados']])
+<thead>
+  <tr>
+    @foreach ($titles as $title)
+    <th class="text-center border px-4 py-2">{{ $title }}</th>
+    @endforeach
+  </tr>
+</thead>

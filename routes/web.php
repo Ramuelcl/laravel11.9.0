@@ -5,8 +5,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Livewire\Pages\Contacto;
-use App\Livewire\PostList;
 use App\Livewire\Pruebas;
+use App\Livewire\Travail\Clientes;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/test-messages', function () {
@@ -18,13 +18,22 @@ use Illuminate\Support\Facades\Route;
 
 //   return view('test'); // Aquí usamos una vista de prueba
 // });
-// sistema BANCA
-Route::group(['prefix' => 'banca'], function () {
-    Route::get('/traspasos', [TraspasoBancaController::class, 'showImportForm'])->name('banca.showImportForm');
-    Route::post('/traspasos', [TraspasoBancaController::class, 'import'])->name('banca.import');
-    Route::post('/traspasos/duplicados', [TraspasoBancaController::class, 'eliminarRegistrosDuplicados'])->name('banca.eliminar.duplicados');
-    Route::post('/traspasos/movimientos', [TraspasoBancaController::class, 'crearMovimientos'])->name('banca.crearMovimientos');
-});
+  // sistema BANCA
+  Route::group(['prefix' => 'banca'], function () {
+      Route::get('/traspasos', [TraspasoBancaController::class, 'showTable'])->name('banca.showTable');
+      Route::get('/traspasos', [TraspasoBancaController::class, 'showImportForm'])->name('banca.showImportForm');
+      Route::post('/traspasos', [TraspasoBancaController::class, 'import'])->name('banca.import');
+      Route::post('/traspasos/duplicados', [TraspasoBancaController::class, 'eliminarRegistrosDuplicados'])->name('banca.eliminar.duplicados');
+      Route::post('/traspasos/movimientos', [TraspasoBancaController::class, 'crearMovimientos'])->name('banca.crearMovimientos');
+  });
+
+// Sistema Travail
+Route::middleware('auth')
+    ->prefix('travail')
+    ->controller(Clientes::class)
+    ->group(function () {
+        Route::get('/clientes', 'clientes')->name('travail.clientes');
+    });
 
 
 Route::controller(HomeController::class)->group(function () {
@@ -41,12 +50,6 @@ Route::get('/pruebas', Pruebas::class)->name('pruebas');
 Route::get('/blog', Pruebas::class)->name('blog');
 Route::get('/portfolio', Pruebas::class)->name('portfolio');
 
-Route::get('posts', PostList::class)->name('posts');
-Route::get('calendar', PostList::class)->name('calendar');
-Route::get('projects', PostList::class)->name('projects');
-Route::get('projects/edit', PostList::class)->name('projects.edit');
-Route::get('projects/update', PostList::class)->name('projects.update');
-
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -55,7 +58,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::get('/user/index', [ProfileController::class, 'destroy'])->name('users.index');
+    Route::get('/users', [ProfileController::class, 'destroy'])->name('users');
+    Route::get('/users/index', [ProfileController::class, 'destroy'])->name('users.index');
+    Route::get('/roles/index', [ProfileController::class, 'destroy'])->name('user.roles.index');
     Route::get('/roles/index', [ProfileController::class, 'destroy'])->name('roles.index');
     Route::get('/roles/create', [ProfileController::class, 'destroy'])->name('roles.create');
     Route::get('/roles/edit', [ProfileController::class, 'destroy'])->name('roles.edit');
