@@ -22,7 +22,7 @@ focus:border-blue-600 mb-3',
     @else grid grid-cols-12 gap-4 items-center @endif w-full
 ">
   {{-- Etiqueta --}}
-  @if ($label)
+  @if ($label && !($type =='checkbox'))
   <label for="{{ $id ?? $name }}" class="text-sm text-gray-700 dark:text-gray-200 
                @if($labelPosition === 'left') sm:col-span-3 text-left {{ $labelWidth }} @endif
                @if($labelPosition === 'right') sm:col-span-3 text-right {{ $labelWidth }} @endif
@@ -40,12 +40,16 @@ focus:border-blue-600 mb-3',
                 {{ $value }}
             </textarea>
     @elseif ($type == 'checkbox')
-    @foreach ($options as $ind=>$option)
-    <label>
-      <input id="{{ $id ?? $name }}" name="{{ $name[] }}" type="checkbox" value="{{ $ind }}" {{ $disabled ? 'disabled'
-        : '' }} {!! $attributes->merge(['class' => "$classFix $class"]) !!} />{{ $option }}
-    </label>
-    @endforeach
+    <div class="grid grid-cols-{{ count($options) > 5 ? '2' : '1' }} gap-4"> {{-- Dynamic grid columns --}}
+      @foreach ($options as $ind=>$option)
+      <div class="flex items-center space-x-2"> {{-- Ensures consistent spacing --}}
+        <input id="{{ $id ?? $name }}" name="{{ $name }}[]" type="checkbox" value="{{ $ind }}" {{ $disabled ? 'disabled'
+          : '' }} {!! $attributes->merge(['class' => "$classFix $class w-[5px] rounded-full"]) !!} />
+        <label for="{{ $id ?? $name }}-{{ $ind }}" class="text-sm text-gray-700 dark:text-gray-200"> {{ $option
+          }}</label>
+      </div>
+      @endforeach
+    </div>
     @elseif ($type == 'select')
     <select id="{{ $id ?? $name }}" name="{{ $name }}" {{ $disabled ? 'disabled' : '' }} {!! $attributes->merge(['class'
       => "$classFix $class w-full"]) !!}>

@@ -31,7 +31,7 @@
     @endisset
 
     <!-- Page Content -->
-    <main>
+    <main class="inline-flex">
       <div x-data="{ show: false }">
         <x-forms.tw_button color="green" class="m-4" @click="show = !show">Toggle</x-forms.tw_button>
         <span x-show="show">Hello, World!</span>

@@ -106,8 +106,7 @@ class Clientes extends Component
     $this->categorias = Categoria::getActiveCategories()->toArray();
     $this->marcadores = Marcador::getActiveMarcadores( )->take(10)->toArray();
     $this->colores = Marcador::getActiveColores( )->take(10)->toArray();
-    // $this->categorias =[1=>'uno', 2=>'dos', 3=>'tres', 4=>'cuatro', 5=>'cinco'];
-    dd($this->marcadores, $this->colores);
+    // dd($this->marcadores, $this->colores);
     // $this->categorias = $query->get()->toArray();
     // $this->marcadores = Marcador::where('is_active', true)->get(['nombre', 'id', 'hexa'])->toArray();
 

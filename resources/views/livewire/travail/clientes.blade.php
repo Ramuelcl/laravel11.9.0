@@ -12,8 +12,8 @@
               <div class="col-span-1">
                 {{-- tipoEntidad, no modificable --}}
                 <div>
-                  <x-forms.tw_input type="select" :options="$tiposEntidad" label="Tipo" wire:model="tipoEntidad"
-                    :disabled="true" class="w-[200px]" value="{{ 2 ?? old('tipoEntidad') }}" />
+                  <x-forms.tw_input type="select" :options="$tiposEntidad" label="Tipo" :disabled="true"
+                    class="w-[200px]" value="{{ 2 ?? old('tipoEntidad') }}" />
                 </div>
                 {{-- nombres --}}
                 <div>
@@ -27,16 +27,12 @@
                 </div>
                 {{-- razonSocial --}}
                 <div>
-                  <x-forms.tw_input type="password" label="Razon Social" wire:model="razonSocial" />
+                  <x-forms.tw_input type="text" label="Razon Social" placeholder="Ingrese razonSocial"
+                    wire:model="razonSocial" labelPosition="right" value="{{ $value ?? old('razonSocial') }}" />
                 </div>
               </div>
               {{-- fin primera columna --}}
               {{-- inicio segunda columna --}}
-              {{-- razonSocial --}}
-              <div>
-                <x-forms.tw_input type="text" label="Razon Social(s)" placeholder="Ingrese razonSocial"
-                  wire:model="razonSocial" labelPosition="right" value="{{ $value ?? old('razonSocial') }}" />
-              </div>
               {{-- Categorias --}}
               <div>
                 <x-forms.tw_input type="select" :options="$categorias" label="Categoria" wire:model="categoria_id"
@@ -45,6 +41,7 @@
 
               {{-- Marcadores --}}
               <div>
+                <caption>Marcadores</caption>
                 <x-forms.tw_input type="checkbox" :options="$marcadores" label="Marcadores" wire:model="marcadores_id"
                   multiple class="w-[200px]" value="{{ $value ?? old('marcadores_id') }}" />
               </div>
