@@ -4,7 +4,7 @@
   <x-tables.tw_ventana title="{{__( $accion .' Cliente')}}">
     <div class="bg-lightBg dark:bg-darkBg shadow rounded-lg">
       <div class="container mx-auto sm:px-4">
-        <form>
+        <form wire:submit="save">
           @csrf
           {{-- <x-forms.tw_button color="blue" wire:click="crear">+</x-forms.tw_button> --}}
           <fieldset {{ $accion=='eliminar' ? 'disabled' : '' }}>
@@ -18,7 +18,7 @@
                 {{-- nombres --}}
                 <div>
                   <x-forms.tw_input type="text" label="Nombre(s)" placeholder="Ingrese el nombre" wire:model="nombres"
-                    value="{{ $value ?? old('nombres') }}" />
+                    required value="{{ $value ?? old('nombres') }}" />
                 </div>
                 {{-- apellidos --}}
                 <div>
@@ -36,7 +36,7 @@
               {{-- Categorias --}}
               <div>
                 <x-forms.tw_input type="select" :options="$categorias" label="Categoria" wire:model="categoria_id"
-                  class="w-[200px]" value="{{ $value ?? old('categoria_id') }}" />
+                  class="w-[200px]" value="{{ $value ?? old('categoria_id') }}" required />
               </div>
 
               {{-- Marcadores --}}

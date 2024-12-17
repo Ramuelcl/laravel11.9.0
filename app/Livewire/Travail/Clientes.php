@@ -174,8 +174,7 @@ class Clientes extends Component
 
     public function save($id)
     {
-      dd('save');
-        // Lógica para eliminar un cliente
+      dd([$this->nombres, $this->apellidos, $this->razonSocial, $this->is_active, $this->aniversario, $this->sexo, $this->categoria_id, $this->marcadores_id,$this->image_path]);
     }
 
 }
